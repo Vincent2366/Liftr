@@ -1,23 +1,21 @@
 <?php
 
-namespace App\Models;
+namespace App\Domains\SuperAdmin\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
         'email',
         'password',
         'is_super_admin',
-        'domain',
-        'domain_status',
-        'subscription',
     ];
 
     protected $hidden = [
@@ -25,20 +23,14 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_super_admin' => 'boolean',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_super_admin' => 'boolean',
+    ];
 
     public function isSuperAdmin(): bool
     {
         return $this->is_super_admin === true;
     }
 }
-
-
-
