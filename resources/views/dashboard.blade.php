@@ -1,91 +1,197 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Admin Dashboard') }}
         </h2>
     </x-slot>
 
-    <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
-        <main class="flex flex-col w-full max-w-4xl gap-8 justify-center p-6">
-            <!-- Admin Panel -->
-            <div class="w-full bg-white p-6 rounded-lg shadow-lg">
-                <h3 class="text-xl font-bold mb-4">Domain Requests</h3>
-                
-                <!-- Domain Requests Table -->
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white">
-                        <thead>
-                            <tr>
-                                <th class="py-2 px-4 border-b text-left">ID</th>
-                                <th class="py-2 px-4 border-b text-left">Subdomain</th>
-                                <th class="py-2 px-4 border-b text-left">Created At</th>
-                                <th class="py-2 px-4 border-b text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach(\App\Models\SubdomainRequest::where('status', 'pending')->get() as $request)
-                            <tr>
-                                <td class="py-2 px-4 border-b">{{ $request->id }}</td>
-                                <td class="py-2 px-4 border-b">{{ $request->subdomain }}.localhost</td>
-                                <td class="py-2 px-4 border-b">{{ $request->created_at->format('Y-m-d H:i') }}</td>
-                                <td class="py-2 px-4 border-b">
-                                <form action="{{ route('subdomain.approve', $request->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white dark:text-white font-bold py-1 px-2 rounded text-xs">
-                                        Approve
-                                    </button>
-                                </form>
-                                <form action="{{ route('subdomain.reject', $request->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white dark:text-white font-bold py-1 px-2 rounded text-xs ml-1">
-                                        Reject
-                                    </button>
-                                </form>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom styles -->
+    <style>
+        .border-left-primary { border-left: 4px solid #4e73df; }
+        .border-left-success { border-left: 4px solid #1cc88a; }
+        .border-left-info { border-left: 4px solid #36b9cc; }
+        .border-left-warning { border-left: 4px solid #f6c23e; }
+        .border-left-danger { border-left: 4px solid #e74a3b; }
+        .text-primary { color: #4e73df !important; }
+        .text-success { color: #1cc88a !important; }
+        .text-info { color: #36b9cc !important; }
+        .text-warning { color: #f6c23e !important; }
+        .text-danger { color: #e74a3b !important; }
+        .badge-success { background-color: #1cc88a; color: white; }
+        .badge-warning { background-color: #f6c23e; color: white; }
+        .badge-danger { background-color: #e74a3b; color: white; }
+        .badge { padding: 0.25em 0.5em; border-radius: 0.25rem; }
+        .btn-primary { background-color: #4e73df; border-color: #4e73df; }
+        .btn-success { background-color: #1cc88a; border-color: #1cc88a; }
+        .btn-danger { background-color: #e74a3b; border-color: #e74a3b; }
+        .btn-secondary { background-color: #858796; border-color: #858796; }
+        .card { margin-bottom: 24px; border: none; box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15); }
+        .card-header { background-color: #f8f9fc; border-bottom: 1px solid #e3e6f0; }
+        .font-weight-bold { font-weight: 700 !important; }
+    </style>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Content Row -->
+            <div class="row">
+                <!-- Pending Requests Card -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Pending Requests</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ \App\Models\SubdomainRequest::where('status', 'pending')->count() }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="mt-4">
-                    <a href="{{ route('subdomain.index') }}" class="text-blue-500 hover:underline">View all requests</a>
-                </div>
-            </div>
-            
-            <!-- Approved Tenants -->
-            <div class="w-full bg-white p-6 rounded-lg shadow-lg">
-                <h3 class="text-xl font-bold mb-4">Active Tenants</h3>
-                
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-white">
-                        <thead>
-                            <tr>
-                                <th class="py-2 px-4 border-b text-left">ID</th>
-                                <th class="py-2 px-4 border-b text-left">Domain</th>
-                                <th class="py-2 px-4 border-b text-left">Created At</th>
-                                <th class="py-2 px-4 border-b text-left">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach(\App\Models\Tenant::all() as $tenant)
-                            <tr>
-                                <td class="py-2 px-4 border-b">{{ $tenant->id }}</td>
-                                <td class="py-2 px-4 border-b">{{ $tenant->id }}.localhost</td>
-                                <td class="py-2 px-4 border-b">
-                                    <a href="http://{{ $tenant->id }}.localhost" target="_blank" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-xs">
-                                        Visit
-                                    </a>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+
+                <!-- Active Tenants Card -->
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Active Tenants</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ \App\Models\Tenant::count() }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-globe fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </main>
+
+            <!-- Domain Requests -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Domain Requests</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Subdomain</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(\App\Models\SubdomainRequest::all() as $request)
+                                <tr>
+                                    <td>{{ $request->id }}</td>
+                                    <td>{{ $request->subdomain }}.localhost</td>
+                                    <td>
+                                        @if($request->status == 'pending')
+                                            <span class="badge badge-warning">Pending</span>
+                                        @elseif($request->status == 'approved')
+                                            <span class="badge badge-success">Approved</span>
+                                        @elseif($request->status == 'rejected')
+                                            <span class="badge badge-danger">Rejected</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $request->created_at->format('Y-m-d H:i') }}</td>
+                                    <td>
+                                        @if($request->status == 'pending')
+                                            <form action="{{ route('subdomain.approve', $request->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('subdomain.reject', $request->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button class="btn btn-secondary btn-sm" disabled>
+                                                <i class="fas fa-ban"></i> Processed
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Tenants -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Active Tenants</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="tenantsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Domain</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(\App\Models\Tenant::all() as $tenant)
+                                <tr>
+                                    <td>{{ $tenant->id }}</td>
+                                    <td>{{ $tenant->id }}.localhost</td>
+                                    <td>
+                                        <a href="http://{{ $tenant->id }}.localhost" target="_blank" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-external-link-alt"></i> Visit
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Page level plugins -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+    <!-- Page level custom scripts -->
+    <script>
+        $(document).ready(function() {
+            $('#dataTable').DataTable();
+            $('#tenantsTable').DataTable();
+        });
+    </script>
 </x-app-layout>
+
+
+
+
+
+
 
 
 
