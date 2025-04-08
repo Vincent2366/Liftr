@@ -12,18 +12,23 @@ foreach (config('tenancy.central_domains') as $domain) {
             return view('welcome');
         });
         
-        Route::get('/dashboard', function () {
-            return view('dashboard');
-        })->middleware(['auth', 'verified'])->name('dashboard');
+        // Protected routes that require email verification
+        Route::middleware(['auth', 'verified'])->group(function () {
+            Route::get('/dashboard', function () {
+                return view('dashboard');
+            })->name('dashboard');
+            
+            // Add other routes that require verification here
+        });
         
         // Subdomain routes
-        Route::post('subdomain', [SubdomainController::class, 'store'])->name('subdomain.store');
+        Route::post('/subdomain', [SubdomainController::class, 'store'])->name('subdomain.store');
         
         // Admin routes
-        Route::middleware(['auth', 'verified'])->group(function () {
-            Route::get('/subdomain-requests', [SubdomainController::class, 'index'])->name('subdomain.requests');
-            Route::post('/subdomain/{id}/approve', [SubdomainController::class, 'approve'])->name('subdomain.approve');
-            Route::post('/subdomain/{id}/reject', [SubdomainController::class, 'reject'])->name('subdomain.reject');
+        Route::middleware(['auth'])->group(function () {
+            Route::get('/admin/subdomain-requests', [SubdomainController::class, 'index'])->name('subdomain.index');
+            Route::post('/admin/subdomain/{id}/approve', [SubdomainController::class, 'approve'])->name('subdomain.approve');
+            Route::post('/admin/subdomain/{id}/reject', [SubdomainController::class, 'reject'])->name('subdomain.reject');
         });
     });
 }
@@ -35,4 +40,6 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+
 

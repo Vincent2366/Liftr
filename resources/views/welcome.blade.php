@@ -50,6 +50,13 @@
                 <!-- Domain Request Form -->
                 <form action="{{ route('subdomain.store') }}" method="post" class="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
                     @csrf
+                    
+                    @if(session('success'))
+                        <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    
                     <div class="mb-4">
                         <label for="subdomain" class="block text-lg font-semibold text-gray-700">Request Your Domain</label>
                         <p class="text-sm text-gray-500 mb-2">Choose a subdomain for your weightlifting business</p>
@@ -58,12 +65,23 @@
                             <span class="text-gray-500">.localhost</span>
                         </div>
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow">
-                        Request Domain
+                    
+                    <div class="mb-4">
+                        <label for="email" class="block text-lg font-semibold text-gray-700">Email Address</label>
+                        <p class="text-sm text-gray-500 mb-2">We'll send your approval and login details to this email</p>
+                        <input type="email" name="email" id="email" class="p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com" required>
+                    </div>
+                    
+                    <button type="submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-black font-semibold py-3 px-5 rounded shadow">
+                        Request Subdomain
                     </button>
                 </form>
             </main>
         </div>
     </body>
 </html>
+
+
+
 

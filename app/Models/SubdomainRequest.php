@@ -21,3 +21,4 @@ class SubdomainRequest extends Model
         return $this->belongsTo(User::class);
     }
 }
+

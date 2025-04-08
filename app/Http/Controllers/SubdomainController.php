@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Tenant;
+use App\Mail\SubdomainApproved;
 use App\Models\SubdomainRequest;
+use App\Models\Tenant;
+use App\Models\User;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class SubdomainController extends Controller
 {
@@ -25,16 +31,29 @@ class SubdomainController extends Controller
     {
         $request->validate([
             'subdomain' => 'required|alpha_num|min:3|max:20|unique:tenants,id|unique:subdomain_requests,subdomain',
+            'email' => 'required|email',
         ]);
+
+        // Check if user exists with this email
+        $user = User::where('email', $request->email)->first();
+        
+        // If not, create a new user
+        if (!$user) {
+            $user = User::create([
+                'name' => $request->subdomain, // Use subdomain as name initially
+                'email' => $request->email,
+                'password' => Hash::make(Str::random(10)), // Random password, will be reset on approval
+            ]);
+        }
 
         // Create a subdomain request
         SubdomainRequest::create([
             'subdomain' => $request->subdomain,
             'status' => SubdomainRequest::STATUS_PENDING,
-            'user_id' => Auth::id() ?? 1, // Default to user 1 if not logged in
+            'user_id' => $user->id,
         ]);
 
-        return back()->with('success', 'Your domain request has been submitted and is pending approval.');
+        return back()->with('success', 'Your domain request has been submitted and is pending approval. You will receive an email when it\'s approved.');
     }
 
     /**
@@ -51,8 +70,14 @@ class SubdomainController extends Controller
         // Update the request status
         $subdomainRequest->update(['status' => SubdomainRequest::STATUS_APPROVED]);
         
-        // Run migrations for the new tenant
-        // This would typically be done via a job or command
+        // Generate a random password for the tenant
+        $password = Str::random(10);
+        
+        // Send approval email if user has an email
+        if ($subdomainRequest->user && $subdomainRequest->user->email) {
+            Mail::to($subdomainRequest->user->email)
+                ->send(new SubdomainApproved($subdomainRequest, $password));
+        }
         
         return back()->with('success', 'Subdomain request approved and tenant created.');
     }
@@ -68,4 +93,9 @@ class SubdomainController extends Controller
         return back()->with('success', 'Subdomain request rejected.');
     }
 }
+
+
+
+
+
 
