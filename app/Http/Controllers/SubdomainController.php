@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Tenant;
+use App\Models\SubdomainRequest;
+use Illuminate\Support\Facades\Auth;
+
 class SubdomainController extends Controller
 {
     /**
@@ -11,15 +14,8 @@ class SubdomainController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $requests = SubdomainRequest::all();
+        return view('admin.subdomain-requests', compact('requests'));
     }
 
     /**
@@ -27,40 +23,49 @@ class SubdomainController extends Controller
      */
     public function store(Request $request)
     {
-        $tenant = Tenant::create(['id' => $request->subdomain]);
-        $tenant->domains()->create(['domain' => $request->subdomain . '.localhost']);
-        return back();
+        $request->validate([
+            'subdomain' => 'required|alpha_num|min:3|max:20|unique:tenants,id|unique:subdomain_requests,subdomain',
+        ]);
+
+        // Create a subdomain request
+        SubdomainRequest::create([
+            'subdomain' => $request->subdomain,
+            'status' => SubdomainRequest::STATUS_PENDING,
+            'user_id' => Auth::id() ?? 1, // Default to user 1 if not logged in
+        ]);
+
+        return back()->with('success', 'Your domain request has been submitted and is pending approval.');
     }
 
     /**
-     * Display the specified resource.
+     * Approve a subdomain request
      */
-    public function show(string $id)
+    public function approve($id)
     {
-        //
+        $subdomainRequest = SubdomainRequest::findOrFail($id);
+        
+        // Create the tenant
+        $tenant = Tenant::create(['id' => $subdomainRequest->subdomain]);
+        $tenant->domains()->create(['domain' => $subdomainRequest->subdomain . '.localhost']);
+        
+        // Update the request status
+        $subdomainRequest->update(['status' => SubdomainRequest::STATUS_APPROVED]);
+        
+        // Run migrations for the new tenant
+        // This would typically be done via a job or command
+        
+        return back()->with('success', 'Subdomain request approved and tenant created.');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Reject a subdomain request
      */
-    public function edit(string $id)
+    public function reject($id)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $subdomainRequest = SubdomainRequest::findOrFail($id);
+        $subdomainRequest->update(['status' => SubdomainRequest::STATUS_REJECTED]);
+        
+        return back()->with('success', 'Subdomain request rejected.');
     }
 }
+

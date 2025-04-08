@@ -28,21 +28,42 @@
                         <a href="{{ route('login') }}" class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal">
                             Log in
                         </a>
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                                Register
-                            </a>
-                        @endif
                     @endauth
                 </nav>
             @endif
         </header>
 
-
-
         @if (Route::has('login'))
             <div class="h-14.5 hidden lg:block"></div>
         @endif
 
+        <!-- Main Content -->
+        <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
+            <main class="flex flex-col lg:flex-row w-full max-w-4xl gap-8 justify-center">
+                <!-- Welcome Content -->
+                <div class="w-full max-w-md bg-white p-6 rounded-lg shadow-lg mb-8">
+                    <h1 class="text-3xl font-bold mb-4">Welcome to Liftr</h1>
+                    <p class="mb-4">The online platform for weightlifting gyms and personal trainers.</p>
+                    <p class="mb-6">Request your own domain to get started!</p>
+                </div>
+
+                <!-- Domain Request Form -->
+                <form action="{{ route('subdomain.store') }}" method="post" class="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
+                    @csrf
+                    <div class="mb-4">
+                        <label for="subdomain" class="block text-lg font-semibold text-gray-700">Request Your Domain</label>
+                        <p class="text-sm text-gray-500 mb-2">Choose a subdomain for your weightlifting business</p>
+                        <div class="flex items-center space-x-3">
+                            <input type="text" name="subdomain" id="subdomain" class="p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="yourname" required>
+                            <span class="text-gray-500">.localhost</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow">
+                        Request Domain
+                    </button>
+                </form>
+            </main>
+        </div>
     </body>
 </html>
+
