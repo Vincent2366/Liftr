@@ -53,7 +53,13 @@ class SubdomainController extends Controller
             'user_id' => $user->id,
         ]);
 
-        return back()->with('success', 'Your domain request has been submitted and is pending approval. You will receive an email when it\'s approved.');
+        // Return JSON response for AJAX requests
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Your domain request is pending for confirmation.']);
+        }
+        
+        // For non-AJAX requests, redirect back with success message
+        return back()->with('success', 'Your domain request is pending for confirmation.');
     }
 
     /**
@@ -93,6 +99,10 @@ class SubdomainController extends Controller
         return back()->with('success', 'Subdomain request rejected.');
     }
 }
+
+
+
+
 
 
 

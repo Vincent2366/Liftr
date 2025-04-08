@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Laravel</title>
+        <title>Liftr - Weightlifting Platform</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -12,76 +12,96 @@
 
         <!-- Styles / Scripts -->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-            @vite(['resources/css/app.css', 'resources/js/app.js'])
+            @vite(['resources/css/app.css', 'resources/css/welcome.css', 'resources/js/app.js'])
         @else
+            <link href="{{ asset('css/welcome.css') }}" rel="stylesheet">
         @endif
     </head>
-    <body class="bg-[#FDFDFC] dark:bg-[#0a0a0a] text-[#1b1b18] flex p-6 lg:p-8 items-center lg:justify-center min-h-screen flex-col">
-        <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
-            @if (Route::has('login'))
-                <nav class="flex items-center justify-end gap-4">
+    <body>
+        <div class="container">
+            <header class="header-nav">
+                @if (Route::has('login'))
                     @auth
-                        <a href="{{ url('/dashboard') }}" class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                            Dashboard
-                        </a>
+                        <a href="{{ url('/dashboard') }}" class="nav-link">Dashboard</a>
                     @else
-                        <a href="{{ route('login') }}" class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal">
-                            Log in
-                        </a>
+                        <a href="{{ route('login') }}" class="nav-link">Log in</a>
                     @endauth
-                </nav>
-            @endif
-        </header>
+                @endif
+            </header>
 
-        @if (Route::has('login'))
-            <div class="h-14.5 hidden lg:block"></div>
-        @endif
-
-        <!-- Main Content -->
-        <div class="flex items-center justify-center w-full transition-opacity opacity-100 duration-750 lg:grow starting:opacity-0">
-            <main class="flex flex-col lg:flex-row w-full max-w-4xl gap-8 justify-center">
+            <div class="flex flex-col md:flex-row gap-8 items-center justify-center min-h-[80vh]">
                 <!-- Welcome Content -->
-                <div class="w-full max-w-md bg-white p-6 rounded-lg shadow-lg mb-8">
+                <div class="card w-full md:w-1/2 max-w-md">
                     <h1 class="text-3xl font-bold mb-4">Welcome to Liftr</h1>
                     <p class="mb-4">The online platform for weightlifting gyms and personal trainers.</p>
                     <p class="mb-6">Request your own domain to get started!</p>
                 </div>
 
                 <!-- Domain Request Form -->
-                <form action="{{ route('subdomain.store') }}" method="post" class="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
-                    @csrf
-                    
-                    @if(session('success'))
-                        <div class="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-                    
-                    <div class="mb-4">
-                        <label for="subdomain" class="block text-lg font-semibold text-gray-700">Request Your Domain</label>
-                        <p class="text-sm text-gray-500 mb-2">Choose a subdomain for your weightlifting business</p>
-                        <div class="flex items-center space-x-3">
-                            <input type="text" name="subdomain" id="subdomain" class="p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="yourname" required>
-                            <span class="text-gray-500">.localhost</span>
-                        </div>
+                <div class="card w-full md:w-1/2 max-w-md">
+                    <div id="form-success-message" class="success-message hidden">
+                        <span>Your domain request is pending for confirmation.</span>
                     </div>
                     
-                    <div class="mb-4">
-                        <label for="email" class="block text-lg font-semibold text-gray-700">Email Address</label>
-                        <p class="text-sm text-gray-500 mb-2">We'll send your approval and login details to this email</p>
-                        <input type="email" name="email" id="email" class="p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="your@email.com" required>
-                    </div>
-                    
-                    <button type="submit"
-                        class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-black font-semibold py-3 px-5 rounded shadow">
-                        Request Subdomain
-                    </button>
-                </form>
-            </main>
+                    <form id="subdomain-form" class="space-y-6">
+                        @csrf
+                        
+                        <div class="mb-4">
+                            <label for="subdomain" class="block text-lg font-semibold mb-2">Subdomain Name</label>
+                            <p class="text-sm text-gray-400 mb-2">Choose a unique subdomain for your site</p>
+                            <div class="domain-input">
+                                <input type="text" name="subdomain" id="subdomain" class="form-control rounded-r-none" placeholder="yourname" required>
+                                <span class="domain-suffix">.localhost</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="email" class="block text-lg font-semibold mb-2">Email Address</label>
+                            <p class="text-sm text-gray-400 mb-2">We'll send your approval and login details to this email</p>
+                            <input type="email" name="email" id="email" class="form-control" placeholder="your@email.com" required>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary w-full">
+                            Request Subdomain
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </body>
 </html>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('subdomain-form');
+    const successMessage = document.getElementById('form-success-message');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        
+        fetch('{{ route('subdomain.store') }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                successMessage.classList.remove('hidden');
+                form.reset();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+});
+</script>
 
 
 
