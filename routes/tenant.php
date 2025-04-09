@@ -11,10 +11,12 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
     // Apply the check.tenant.status middleware specifically to the login route
-    Route::get('/login', [AuthenticatedSessionController::class, 'create'])
+    Route::get('/login', function () {
+        return view('tenant.auth.tenantLogin');
+    })
         ->middleware(['check.tenant.status'])
         ->name('login');
-    
+
     // Other auth routes without the check
     Route::post('/login', [AuthenticatedSessionController::class, 'store']);
     
@@ -29,5 +31,7 @@ Route::middleware([
         return view('tenant.dashboard');
     });
 });
+
+
 
 
