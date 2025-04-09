@@ -102,6 +102,34 @@ body {
     margin-bottom: 1rem;
 }
 
+/* Error message */
+.error-message {
+    background-color: rgba(231, 74, 59, 0.1);
+    border: 1px solid rgba(231, 74, 59, 0.5);
+    color: #e74a3b;
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+}
+
+/* Message close button */
+.close-message {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+    color: inherit;
+    opacity: 0.5;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin-left: 0.5rem;
+    cursor: pointer;
+}
+
+.close-message:hover {
+    opacity: 0.75;
+}
+
 /* Navigation */
 .header-nav {
     display: flex;
@@ -220,4 +248,6 @@ body {
         max-width: 28rem;
     }
 }
+
+
 

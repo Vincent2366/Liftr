@@ -39,9 +39,13 @@
 
                 <!-- Domain Request Form -->
                 <div class="card w-full md:w-1/2 max-w-md">
-                    <div id="form-success-message" class="success-message hidden">
+                    <x-success-message id="form-success-message">
                         <span>Your domain request is pending for confirmation.</span>
-                    </div>
+                    </x-success-message>
+                    
+                    <x-error-message id="form-error-message">
+                        <span>There was an error processing your request. Please try again.</span>
+                    </x-error-message>
                     
                     <form id="subdomain-form" class="space-y-6">
                         @csrf
@@ -75,9 +79,21 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('subdomain-form');
     const successMessage = document.getElementById('form-success-message');
+    const errorMessage = document.getElementById('form-error-message');
+    
+    // Function to hide messages after timeout
+    function hideMessageAfterTimeout(messageElement, timeout = 3000) {
+        setTimeout(() => {
+            messageElement.classList.add('hidden');
+        }, timeout);
+    }
     
     form.addEventListener('submit', function(e) {
         e.preventDefault();
+        
+        // Hide any existing messages
+        successMessage.classList.add('hidden');
+        errorMessage.classList.add('hidden');
         
         // Use the current domain for the request
         const formData = new FormData(form);
@@ -100,13 +116,24 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 successMessage.classList.remove('hidden');
+                hideMessageAfterTimeout(successMessage);
                 form.reset();
+            } else {
+                errorMessage.querySelector('span').textContent = data.message || 'There was an error processing your request.';
+                errorMessage.classList.remove('hidden');
+                hideMessageAfterTimeout(errorMessage);
             }
         })
         .catch(error => {
             console.error('Error:', error);
+            errorMessage.querySelector('span').textContent = 'There was an error connecting to the server.';
+            errorMessage.classList.remove('hidden');
+            hideMessageAfterTimeout(errorMessage);
         });
     });
 });
 </script>
+
+
+
 
