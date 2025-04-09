@@ -37,12 +37,12 @@
                             <div class="col-lg-6">
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                        <h1 class="h4 text-gray-900 mb-4">Welcome to {{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }}!</h1>
                                         @if(isset($tenant) && $tenant->name)
                                             <p class="mb-4">{{ $tenant->name }}</p>
                                         @endif
                                     </div>
-                                    <form class="user" method="POST" action="{{ route('login') }}">
+                                    <form method="POST" action="{{ url('/login') }}" id="loginForm">
                                         @csrf
                                         <div class="form-group">
                                             <input type="email" class="form-control form-control-user" name="email" id="email" 
@@ -100,7 +100,40 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
+
+    <script>
+        // If you're using JavaScript to submit the form
+        document.addEventListener('DOMContentLoaded', function() {
+            // For AJAX requests, ensure the CSRF token is included
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // For SPA authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch CSRF cookie before login attempts
+            fetch('/sanctum/csrf-cookie', {
+                method: 'GET',
+                credentials: 'same-origin'
+            }).then(response => {
+                console.log('CSRF cookie set');
+            });
+        });
+    </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
 
 
