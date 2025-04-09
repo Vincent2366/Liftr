@@ -68,7 +68,7 @@
         
         <p>You can log in to your subdomain using the credentials above after verifying your email. We recommend changing your password after your first login for security purposes.</p>
         
-        <a href="http://{{ $subdomainRequest->subdomain }}.localhost" class="button">Visit Your Subdomain</a>
+        <a href="http://{{ $subdomainRequest->subdomain }}.localhost:8000/login" class="button">Visit Your Subdomain</a>
         
         <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
         
@@ -83,3 +83,4 @@
     </div>
 </body>
 </html>
+
