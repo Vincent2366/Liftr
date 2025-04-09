@@ -87,45 +87,29 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Subdomain</th>
-                                    <th>Status</th>
                                     <th>Created At</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach(\App\Models\SubdomainRequest::all() as $request)
+                                @foreach(\App\Models\SubdomainRequest::where('status', 'pending')->get() as $request)
                                 <tr>
                                     <td>{{ $request->id }}</td>
                                     <td>{{ $request->subdomain }}.localhost</td>
-                                    <td>
-                                        @if($request->status == 'pending')
-                                            <span class="badge badge-warning">Pending</span>
-                                        @elseif($request->status == 'approved')
-                                            <span class="badge badge-success">Approved</span>
-                                        @elseif($request->status == 'rejected')
-                                            <span class="badge badge-danger">Rejected</span>
-                                        @endif
-                                    </td>
                                     <td>{{ $request->created_at->format('Y-m-d H:i') }}</td>
                                     <td>
-                                        @if($request->status == 'pending')
-                                            <form action="{{ route('subdomain.approve', $request->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-success btn-sm">
-                                                    <i class="fas fa-check"></i> Approve
-                                                </button>
-                                            </form>
-                                            <form action="{{ route('subdomain.reject', $request->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-danger btn-sm">
-                                                    <i class="fas fa-times"></i> Reject
-                                                </button>
-                                            </form>
-                                        @else
-                                            <button class="btn btn-secondary btn-sm" disabled>
-                                                <i class="fas fa-ban"></i> Processed
+                                        <form action="{{ route('subdomain.approve', $request->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="fas fa-check"></i> Approve
                                             </button>
-                                        @endif
+                                        </form>
+                                        <form action="{{ route('subdomain.reject', $request->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -206,6 +190,7 @@
         });
     </script>
 </x-app-layout>
+
 
 
 
