@@ -111,16 +111,15 @@ class TenancyServiceProvider extends ServiceProvider
     }
 
     protected function bootLiveWire(){
-
         Livewire::setUpdateRoute(function ($handle) {
             return Route::post('/livewire/update', $handle)
                 ->middleware(
                     'web',
                     'universal',
-                    InitializeTenancyByDomain::class, 
+                    InitializeTenancyByDomain::class,
+                    'check.tenant.status', // Add the middleware here
                 );
         });
-
     }
 
     protected function bootEvents()
@@ -164,3 +163,4 @@ class TenancyServiceProvider extends ServiceProvider
         }
     }
 }
+

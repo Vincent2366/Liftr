@@ -98,7 +98,46 @@ class SubdomainController extends Controller
         
         return back()->with('success', 'Subdomain request rejected.');
     }
+
+    /**
+     * Freeze a tenant domain
+     */
+    public function freeze($id)
+    {
+        $tenant = Tenant::findOrFail($id);
+        
+        // Update the tenant status to frozen
+        $tenant->update(['status' => Tenant::STATUS_FROZEN]);
+        
+        return redirect()->route('dashboard')->with('success', "Tenant {$tenant->id} has been frozen");
+    }
+
+    /**
+     * Unfreeze a tenant domain
+     */
+    public function unfreeze($id)
+    {
+        $tenant = Tenant::findOrFail($id);
+        
+        // Update the tenant status to active
+        $tenant->update(['status' => Tenant::STATUS_ACTIVE]);
+        
+        return redirect()->route('dashboard')->with('success', "Tenant {$tenant->id} has been unfrozen");
+    }
+
+    /**
+     * Show upgrade options for a tenant
+     */
+    public function upgrade($id)
+    {
+        $tenant = Tenant::findOrFail($id);
+        return view('admin.tenant-upgrade', compact('tenant'));
+    }
 }
+
+
+
+
 
 
 

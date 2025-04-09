@@ -1,36 +1,33 @@
 <?php
 
-declare(strict_types=1);
-
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
-/*
-|--------------------------------------------------------------------------
-| Tenant Routes
-|--------------------------------------------------------------------------
-|
-| Here you can register the tenant routes for your application.
-| These routes are loaded by the TenantRouteServiceProvider.
-|
-| Feel free to customize them however you want. Good luck!
-|
-*/
 Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
-
+    // Apply the check.tenant.status middleware specifically to the login route
+    Route::get('/login', [AuthenticatedSessionController::class, 'create'])
+        ->middleware(['check.tenant.status'])
+        ->name('login');
+    
+    // Other auth routes without the check
+    Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+    
+    // Include other auth routes as needed
+    Route::get('/forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'create'])
+        ->name('password.request');
+    Route::post('/forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'store'])
+        ->name('password.email');
+    
+    // Other tenant routes...
     Route::get('/', function () {
-        dd(\App\Models\User::query()->get());
-        return 'This is your multi-tenant application. The id of the current tenant is ' . tenant('id');
-
+        return view('tenant.dashboard');
     });
-
-    Route::get('users/create', [UserController::class, 'create'])->name('users.create');
-    Route::post('users', [UserController::class, 'store'])->name('users.store');
-
 });
+
+

@@ -63,7 +63,7 @@
                             <div class="row no-gutters align-items-center">
                                 <div class="col mr-2">
                                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                        Active Tenants</div>
+                                         Tenants</div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{ \App\Models\Tenant::count() }}</div>
                                 </div>
                                 <div class="col-auto">
@@ -138,7 +138,7 @@
             <!-- Active Tenants -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Active Tenants</h6>
+                    <h6 class="m-0 font-weight-bold text-primary"> Tenants</h6>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -156,8 +156,28 @@
                                     <td>{{ $tenant->id }}</td>
                                     <td>{{ $tenant->id }}.localhost</td>
                                     <td>
-                                        <a href="http://{{ $tenant->id }}.localhost" target="_blank" class="btn btn-primary btn-sm">
+                                        <a href="http://{{ $tenant->id }}.localhost:8000/login" target="_blank" class="btn btn-primary btn-sm me-1">
                                             <i class="fas fa-external-link-alt"></i> Visit
+                                        </a>
+                                        
+                                        @if($tenant->status == \App\Models\Tenant::STATUS_ACTIVE)
+                                            <form action="{{ route('tenant.freeze', $tenant->id) }}" method="POST" class="d-inline me-1">
+                                                @csrf
+                                                <button type="submit" class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-snowflake"></i> Freeze
+                                                </button>
+                                            </form>
+                                        @else
+                                            <form action="{{ route('tenant.unfreeze', $tenant->id) }}" method="POST" class="d-inline me-1">
+                                                @csrf
+                                                <button type="submit" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-sun"></i> Unfreeze
+                                                </button>
+                                            </form>
+                                        @endif
+                                        
+                                        <a href="{{ route('tenant.upgrade', $tenant->id) }}" class="btn btn-success btn-sm">
+                                            <i class="fas fa-arrow-up"></i> Upgrade
                                         </a>
                                     </td>
                                 </tr>
@@ -186,13 +206,6 @@
         });
     </script>
 </x-app-layout>
-
-
-
-
-
-
-
 
 
 

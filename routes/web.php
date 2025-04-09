@@ -12,6 +12,9 @@ foreach (config('tenancy.central_domains') as $domain) {
             return view('welcome');
         });
         
+        // Include auth routes for central domains
+        require __DIR__.'/auth.php';
+        
         // Protected routes that require email verification
         Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/dashboard', function () {
@@ -29,6 +32,10 @@ foreach (config('tenancy.central_domains') as $domain) {
             Route::get('/admin/subdomain-requests', [SubdomainController::class, 'index'])->name('subdomain.index');
             Route::post('/admin/subdomain/{id}/approve', [SubdomainController::class, 'approve'])->name('subdomain.approve');
             Route::post('/admin/subdomain/{id}/reject', [SubdomainController::class, 'reject'])->name('subdomain.reject');
+            
+            Route::post('/admin/tenant/{id}/freeze', [SubdomainController::class, 'freeze'])->name('tenant.freeze');
+            Route::post('/admin/tenant/{id}/unfreeze', [SubdomainController::class, 'unfreeze'])->name('tenant.unfreeze');
+            Route::get('/admin/tenant/{id}/upgrade', [SubdomainController::class, 'upgrade'])->name('tenant.upgrade');
         });
     });
 }
@@ -39,11 +46,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
-
-
-
-
-
+// require __DIR__.'/auth.php'; moved inside the domain group
 
 
