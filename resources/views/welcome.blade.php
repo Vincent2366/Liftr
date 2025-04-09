@@ -79,17 +79,24 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        // Use the current domain for the request
         const formData = new FormData(form);
         
-        fetch('{{ route('subdomain.store') }}', {
+        fetch('/subdomain', {
             method: 'POST',
             body: formData,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-            }
+            },
+            credentials: 'same-origin'
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 successMessage.classList.remove('hidden');
@@ -102,6 +109,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-
 
