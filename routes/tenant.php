@@ -17,6 +17,11 @@ Route::get('/sanctum/csrf-cookie', function () {
     return response()->json(['message' => 'CSRF cookie set']);
 });
 
+// Add this route to refresh CSRF token
+Route::get('/refresh-csrf', function () {
+    return response()->json(['token' => csrf_token()]);
+});
+
 Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
@@ -74,6 +79,7 @@ Route::middleware([
         Route::get('/settings', [SettingController::class, 'index'])->name('tenant.settings');
     });
 });
+
 
 
 

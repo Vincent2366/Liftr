@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>Liftr - Login</title>
 
@@ -77,11 +78,6 @@
                                     <div class="text-center">
                                         <a class="small" href="{{ route('register') }}">Create an Account!</a>
                                     </div>
-                                    <div class="text-center mt-3">
-                                        <a href="/" class="small">
-                                            <i class="fas fa-arrow-left"></i> Back to Home
-                                        </a>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -102,7 +98,6 @@
     <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
 
     <script>
-        // If you're using JavaScript to submit the form
         document.addEventListener('DOMContentLoaded', function() {
             // For AJAX requests, ensure the CSRF token is included
             $.ajaxSetup({
@@ -110,6 +105,38 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
+            
+            // Refresh CSRF token before form submission
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    // Prevent the default form submission
+                    e.preventDefault();
+                    
+                    // Refresh the CSRF token
+                    fetch('/refresh-csrf', {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update the CSRF token in the meta tag
+                        document.querySelector('meta[name="csrf-token"]').setAttribute('content', data.token);
+                        // Update the CSRF token in the form
+                        document.querySelector('input[name="_token"]').value = data.token;
+                        // Submit the form
+                        this.submit();
+                    })
+                    .catch(error => {
+                        console.error('Failed to refresh CSRF token:', error);
+                        // Submit the form anyway as a fallback
+                        this.submit();
+                    });
+                });
+            }
         });
     </script>
 
@@ -122,11 +149,17 @@
                 credentials: 'same-origin'
             }).then(response => {
                 console.log('CSRF cookie set');
+            }).catch(error => {
+                console.error('Failed to set CSRF cookie:', error);
             });
         });
     </script>
 </body>
 </html>
+
+
+
+
 
 
 
