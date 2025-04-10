@@ -107,12 +107,14 @@ Route::middleware([
 Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
+    'web', // Add web middleware to ensure session is available
 ])->post('/api/login', [TenantAuthController::class, 'apiLogin']);
 
 // Test route to check if user exists
 Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
+    'web', // Add web middleware to ensure session is available
 ])->get('/check-user/{email}', function ($email) {
     $user = \App\Models\User::where('email', $email)->first();
     if ($user) {
@@ -124,5 +126,6 @@ Route::middleware([
     }
     return response()->json(['exists' => false]);
 });
+
 
 

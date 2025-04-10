@@ -113,6 +113,11 @@ class TenantAuthController extends Controller
                 ], 401);
             }
             
+            // Ensure session is started
+            if (!$request->hasSession() || !$request->session()->isStarted()) {
+                $request->session()->start();
+            }
+            
             // Manual login
             Auth::guard('web')->login($user, $request->boolean('remember'));
             $request->session()->regenerate();
@@ -131,10 +136,10 @@ class TenantAuthController extends Controller
                 'redirect' => route('tenant.dashboard')
             ]);
         } catch (\Exception $e) {
-            Log::error('API Login error: ' . $e->getMessage(), [
+            Log::error('Login error: ' . $e->getMessage(), [
                 'exception' => get_class($e),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
             
             return response()->json([
@@ -144,6 +149,7 @@ class TenantAuthController extends Controller
         }
     }
 }
+
 
 
 

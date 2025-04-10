@@ -21,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.tenant.status' => CheckTenantStatus::class,
         ]);
         
+        // Add session middleware to the web group
+        $middleware->appendToGroup('web', \Illuminate\Session\Middleware\StartSession::class);
+        
         // Exclude specific routes from CSRF verification
         $middleware->validateCsrfTokens(except: [
             'api/login',
@@ -31,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
+
 
 
 
