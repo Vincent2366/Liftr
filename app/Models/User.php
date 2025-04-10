@@ -47,6 +47,27 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Set the user's password.
+     *
+     * @param string $value
+     * @return void
+     */
+    public function setPasswordAttribute($value)
+    {
+        // Log the password setting for debugging
+        \Illuminate\Support\Facades\Log::info('Setting password', [
+            'is_hashed' => \Illuminate\Support\Facades\Hash::isHashed($value),
+            'value_length' => strlen($value)
+        ]);
+        
+        // Only hash the password if it's not already hashed
+        $this->attributes['password'] = \Illuminate\Support\Facades\Hash::isHashed($value)
+            ? $value
+            : \Illuminate\Support\Facades\Hash::make($value);
+    }
 }
+
 
 

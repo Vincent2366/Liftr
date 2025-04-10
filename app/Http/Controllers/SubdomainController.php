@@ -69,15 +69,18 @@ class SubdomainController extends Controller
     {
         $subdomainRequest = SubdomainRequest::findOrFail($id);
         
-        // Create the tenant
-        $tenant = Tenant::create(['id' => $subdomainRequest->subdomain]);
+        // Generate a random password for the tenant
+        $password = Str::random(10);
+        
+        // Create the tenant with metadata including the password
+        $tenant = Tenant::create([
+            'id' => $subdomainRequest->subdomain,
+            'password' => $password // Store password in tenant metadata
+        ]);
         $tenant->domains()->create(['domain' => $subdomainRequest->subdomain . '.localhost']);
         
         // Update the request status
         $subdomainRequest->update(['status' => SubdomainRequest::STATUS_APPROVED]);
-        
-        // Generate a random password for the tenant
-        $password = Str::random(10);
         
         // Send approval email if user has an email
         if ($subdomainRequest->user && $subdomainRequest->user->email) {
@@ -134,6 +137,7 @@ class SubdomainController extends Controller
         return view('admin.tenant-upgrade', compact('tenant'));
     }
 }
+
 
 
 
