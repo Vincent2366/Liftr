@@ -4,6 +4,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckTenantStatus;
+use App\Http\Middleware\DisableCsrfForTenants;
+use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
+use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,12 +15,24 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Register the CheckTenantStatus middleware
+        // Register your middleware aliases
         $middleware->alias([
+            'disable.csrf' => DisableCsrfForTenants::class,
             'check.tenant.status' => CheckTenantStatus::class,
+        ]);
+        
+        // Exclude specific routes from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'api/login',
+            'refresh-csrf',
+            'sanctum/csrf-cookie',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
+
+
+
+
 

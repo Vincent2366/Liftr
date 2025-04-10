@@ -5,63 +5,149 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 
 class TenantAuthController extends Controller
 {
-    /**
-     * Display the tenant login view.
-     */
-    public function showLoginForm(): View
+    public function showLoginForm()
     {
-        // Ensure a fresh session and CSRF token
-        if (session()->has('errors')) {
-            session()->keep(['errors']);
-        }
-        
-        // Get current tenant
-        $tenant = tenant();
-        
-        return view('tenant.auth.tenantLogin', compact('tenant'));
+        return view('tenant.auth.tenantLogin');
     }
 
-    /**
-     * Handle a tenant login request.
-     */
-    public function login(Request $request): RedirectResponse
+    public function login(Request $request)
     {
-        $request->validate([
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
-        ]);
+        try {
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
+            ]);
 
-        // Attempt to authenticate the user
-        if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
-            // Authentication was successful
-            $request->session()->regenerate();
+            if (Auth::attempt($request->only('email', 'password'), $request->filled('remember'))) {
+                $request->session()->regenerate();
+                
+                // For API requests, return a token
+                if ($request->expectsJson()) {
+                    $user = Auth::user();
+                    $token = $user->createToken('tenant-token')->plainTextToken;
+                    return response()->json(['token' => $token]);
+                }
+                
+                // For web requests, redirect
+                return redirect()->intended(route('tenant.dashboard'));
+            }
+
+            throw ValidationException::withMessages([
+                'email' => [trans('auth.failed')],
+            ]);
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Illuminate\Support\Facades\Log::error('Login error: ' . $e->getMessage());
             
-            return redirect()->intended(route('tenant.dashboard'));
+            // Return a more helpful error message
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
+            
+            return back()->withErrors(['email' => 'Authentication error: ' . $e->getMessage()]);
         }
-
-        // Authentication failed
-        throw ValidationException::withMessages([
-            'email' => [trans('auth.failed')],
-        ]);
     }
 
-    /**
-     * Log the user out of the tenant application.
-     */
-    public function logout(Request $request): RedirectResponse
+    public function logout(Request $request)
     {
-        Auth::logout();
-
+        // Revoke the token that was used to authenticate the current request
+        if ($request->user()) {
+            $request->user()->currentAccessToken()->delete();
+        }
+        
+        Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        
+        return redirect('/login');
+    }
 
-        return redirect()->route('login');
+    /**
+     * Handle an API login request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function apiLogin(Request $request)
+    {
+        try {
+            $credentials = $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required'],
+            ]);
+
+            Log::info('Login attempt', [
+                'email' => $request->email,
+                'remember' => $request->boolean('remember'),
+                'tenant' => tenant() ? tenant()->id : 'none'
+            ]);
+            
+            // Find the user directly
+            $user = \App\Models\User::where('email', $request->email)->first();
+            
+            if (!$user) {
+                Log::warning('Login failed - user not found', [
+                    'email' => $request->email
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'error' => 'User not found with this email.'
+                ], 401);
+            }
+            
+            // Check password manually
+            if (!\Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
+                Log::warning('Login failed - password mismatch', [
+                    'email' => $request->email
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Invalid password.'
+                ], 401);
+            }
+            
+            // Manual login
+            Auth::guard('web')->login($user, $request->boolean('remember'));
+            $request->session()->regenerate();
+            
+            // Generate token
+            $token = $user->createToken('auth-token')->plainTextToken;
+            
+            Log::info('Login successful', [
+                'user_id' => $user->id,
+                'email' => $user->email
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'token' => $token,
+                'redirect' => route('tenant.dashboard')
+            ]);
+        } catch (\Exception $e) {
+            Log::error('API Login error: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 422);
+        }
     }
 }
+
+
+
+
+
+
 

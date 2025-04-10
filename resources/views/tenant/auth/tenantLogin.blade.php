@@ -12,11 +12,11 @@
     <title>{{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }}</title>
 
     <!-- Custom fonts for this template-->
-    <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ url('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    <link href="{{ url('/css/sb-admin-2.min.css') }}" rel="stylesheet">
+    <link href="{{ url('css/sb-admin-2.min.css') }}" rel="stylesheet">
 </head>
 
 <body class="bg-gradient-primary">
@@ -44,17 +44,18 @@
                                         @endif
                                     </div>
                                     <form method="POST" action="{{ url('/login') }}" id="loginForm">
-                                        @csrf
+                                        <!-- No CSRF token field -->
+                                        
                                         <div class="form-group">
                                             <input type="email" class="form-control form-control-user" name="email" id="email" 
-                                                aria-describedby="emailHelp" placeholder="Enter Email Address..." value="{{ old('email') }}" required>
+                                                placeholder="Enter Email Address..." value="{{ old('email') }}" required>
                                             @error('email')
                                                 <span class="text-danger small">{{ $message }}</span>
                                             @enderror
                                         </div>
                                         <div class="form-group">
-                                            <input type="password" class="form-control form-control-user" name="password" 
-                                                id="password" placeholder="Password" required>
+                                            <input type="password" class="form-control form-control-user" name="password" id="password" 
+                                                placeholder="Password" required>
                                             @error('password')
                                                 <span class="text-danger small">{{ $message }}</span>
                                             @enderror
@@ -65,9 +66,7 @@
                                                 <label class="custom-control-label" for="remember">Remember Me</label>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn btn-primary btn-user btn-block">
-                                            Login
-                                        </button>
+                                        <button type="submit" class="btn btn-primary btn-user btn-block">Login</button>
                                     </form>
                                     <hr>
                                     <div class="text-center">
@@ -96,77 +95,65 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // For AJAX requests, ensure the CSRF token is included
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                }
-            });
-            
-            // Refresh CSRF token before form submission
             const loginForm = document.getElementById('loginForm');
             if (loginForm) {
                 loginForm.addEventListener('submit', function(e) {
-                    // Prevent the default form submission
                     e.preventDefault();
                     
-                    // Refresh the CSRF token
-                    fetch('/refresh-csrf', {
-                        method: 'GET',
-                        credentials: 'same-origin',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Update the CSRF token in the meta tag
-                        document.querySelector('meta[name="csrf-token"]').setAttribute('content', data.token);
-                        // Update the CSRF token in the form
-                        document.querySelector('input[name="_token"]').value = data.token;
-                        // Submit the form
-                        this.submit();
-                    })
-                    .catch(error => {
-                        console.error('Failed to refresh CSRF token:', error);
-                        // Submit the form anyway as a fallback
-                        this.submit();
-                    });
+                    const email = document.getElementById('email').value;
+                    const password = document.getElementById('password').value;
+                    const remember = document.getElementById('remember').checked;
+                    
+                    // First check if the user exists
+                    fetch('/check-user/' + encodeURIComponent(email))
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('User check:', data);
+                            
+                            // Proceed with login attempt
+                            return fetch('/api/login', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    email: email,
+                                    password: password,
+                                    remember: remember
+                                })
+                            });
+                        })
+                        .then(response => {
+                            console.log('Response status:', response.status);
+                            return response.json().then(data => {
+                                console.log('Response data:', data);
+                                if (!response.ok) {
+                                    throw new Error(data.error || data.message || 'Login failed');
+                                }
+                                return data;
+                            });
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                // Store token and redirect
+                                localStorage.setItem('auth_token', data.token);
+                                window.location.href = data.redirect || '/dashboard';
+                            } else {
+                                alert('Login error: ' + (data.error || 'Unknown error'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Login error: ' + (error.message || 'An error occurred during login. Please try again.'));
+                        });
                 });
             }
         });
     </script>
-
-    <script>
-        // For SPA authentication
-        document.addEventListener('DOMContentLoaded', function() {
-            // Fetch CSRF cookie before login attempts
-            fetch('/sanctum/csrf-cookie', {
-                method: 'GET',
-                credentials: 'same-origin'
-            }).then(response => {
-                console.log('CSRF cookie set');
-            }).catch(error => {
-                console.error('Failed to set CSRF cookie:', error);
-            });
-        });
-    </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
 
 
