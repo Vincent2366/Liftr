@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class SubdomainController extends Controller
 {
@@ -45,21 +46,23 @@ class SubdomainController extends Controller
                 'password' => Hash::make(Str::random(10)), // Random password, will be reset on approval
             ]);
         }
-
-        // Create a subdomain request
-        SubdomainRequest::create([
-            'subdomain' => $request->subdomain,
-            'status' => SubdomainRequest::STATUS_PENDING,
-            'user_id' => $user->id,
-        ]);
-
-        // Return JSON response for AJAX requests
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Your domain request is pending for confirmation.']);
-        }
         
-        // For non-AJAX requests, redirect back with success message
-        return back()->with('success', 'Your domain request is pending for confirmation.');
+        // Create the subdomain request with email and pending status
+        $subdomainRequest = SubdomainRequest::create([
+            'subdomain' => $request->subdomain,
+            'user_id' => $user->id,
+            'email' => $request->email, // Store email directly in subdomain_requests
+            'status' => 'pending', // Initialize with pending status
+        ]);
+        
+        // Log the creation
+        Log::info('Subdomain request created', [
+            'subdomain' => $request->subdomain,
+            'email' => $request->email,
+            'status' => 'pending'
+        ]);
+        
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -69,26 +72,65 @@ class SubdomainController extends Controller
     {
         $subdomainRequest = SubdomainRequest::findOrFail($id);
         
+        // Update the status to approved
+        $subdomainRequest->status = 'approved';
+        $subdomainRequest->save();
+        
         // Generate a random password for the tenant
         $password = Str::random(10);
         
-        // Create the tenant with metadata including the password
-        $tenant = Tenant::create([
-            'id' => $subdomainRequest->subdomain,
-            'password' => $password // Store password in tenant metadata
-        ]);
-        $tenant->domains()->create(['domain' => $subdomainRequest->subdomain . '.localhost']);
-        
-        // Update the request status
-        $subdomainRequest->update(['status' => SubdomainRequest::STATUS_APPROVED]);
-        
-        // Send approval email if user has an email
-        if ($subdomainRequest->user && $subdomainRequest->user->email) {
-            Mail::to($subdomainRequest->user->email)
-                ->send(new SubdomainApproved($subdomainRequest, $password));
+        try {
+            // Store the email and password in the tenant metadata
+            $tenant = Tenant::create([
+                'id' => $subdomainRequest->subdomain,
+                'email' => $subdomainRequest->email, // Add email to tenant metadata
+                'password' => $password
+            ]);
+            
+            $tenant->domains()->create(['domain' => $subdomainRequest->subdomain . '.localhost']);
+            
+            // Log the approval with detailed information
+            Log::info('Subdomain request approved and tenant created', [
+                'id' => $subdomainRequest->id,
+                'subdomain' => $subdomainRequest->subdomain,
+                'email' => $subdomainRequest->email,
+                'status' => $subdomainRequest->status
+            ]);
+            
+            // Send approval email
+            $emailToUse = $subdomainRequest->email ?? ($subdomainRequest->user->email ?? null);
+            
+            if ($emailToUse) {
+                try {
+                    Mail::to($emailToUse)
+                        ->send(new SubdomainApproved($subdomainRequest, $password));
+                    
+                    Log::info('Approval email sent', [
+                        'subdomain' => $subdomainRequest->subdomain,
+                        'email' => $emailToUse
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send approval email', [
+                        'subdomain' => $subdomainRequest->subdomain,
+                        'email' => $emailToUse,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            } else {
+                Log::warning('No email found to send approval notification', [
+                    'subdomain' => $subdomainRequest->subdomain
+                ]);
+            }
+            
+            return back()->with('success', 'Subdomain request approved and tenant created.');
+        } catch (\Exception $e) {
+            Log::error('Failed to create tenant', [
+                'subdomain' => $subdomainRequest->subdomain,
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()->with('error', 'Failed to create tenant: ' . $e->getMessage());
         }
-        
-        return back()->with('success', 'Subdomain request approved and tenant created.');
     }
 
     /**
@@ -137,6 +179,13 @@ class SubdomainController extends Controller
         return view('admin.tenant-upgrade', compact('tenant'));
     }
 }
+
+
+
+
+
+
+
 
 
 

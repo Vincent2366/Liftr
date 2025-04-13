@@ -9,16 +9,22 @@ class SubdomainRequest extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['subdomain', 'status', 'user_id'];
-    
     // Status constants
     const STATUS_PENDING = 'pending';
     const STATUS_APPROVED = 'approved';
     const STATUS_REJECTED = 'rejected';
-    
+
+    protected $fillable = [
+        'subdomain',
+        'status',
+        'user_id',
+        'email', // Add email to fillable attributes
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 }
+
 

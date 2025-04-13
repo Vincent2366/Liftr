@@ -17,6 +17,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     protected $fillable = [
         'id',
+        'email',
         'status',
         'password', // Add password to fillable attributes
         'data',

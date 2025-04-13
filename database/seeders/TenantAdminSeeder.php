@@ -6,66 +6,93 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use App\Models\Tenant;
 
 class TenantAdminSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run()
     {
-        // Get the tenant ID and metadata
-        $tenant = tenant();
-        $tenantId = $tenant->id;
-        Log::info('Running TenantAdminSeeder for tenant: ' . $tenantId);
+        $tenantId = tenant('id');
+        Log::info('RUNNING TENANT ADMIN SEEDER', ['tenant_id' => $tenantId]);
         
-        // Get the password from tenant metadata, or use default if not found
-        $password = $tenant->password ?? '123456';
-        
-        // Try to get the email from the central database
         try {
-            // Connect to central database to get the subdomain request
-            $subdomain = \Illuminate\Support\Facades\DB::connection('central')
-                ->table('subdomain_requests')
-                ->where('subdomain', $tenantId)
-                ->where('status', 'approved')
-                ->first();
+            // Get the current tenant
+            $tenant = Tenant::find($tenantId);
             
-            $email = $subdomain ? $subdomain->email : '2001105940@student.buksu.edu.ph';
+            if (!$tenant) {
+                throw new \Exception("Tenant not found: $tenantId");
+            }
             
-            Log::info('Creating tenant admin user', [
-                'email' => $email,
-                'tenant' => $tenantId,
-                'using_generated_password' => isset($tenant->password)
+            // Get email from tenant metadata
+            $email = $tenant->email ?? null;
+            
+            // Get password from tenant metadata or generate a new one
+            $password = $tenant->password ?? Str::random(10);
+            $hashedPassword = Hash::make($password);
+            
+            Log::info('Tenant data retrieved', [
+                'tenant_id' => $tenantId,
+                'has_email' => !empty($email),
+                'has_password' => !empty($password)
             ]);
             
-            // Create the admin user with the password from tenant metadata
-            User::create([
+            if (empty($email)) {
+                // Try to get email from subdomain_requests as fallback
+                try {
+                    $subdomainRequest = DB::connection('central')
+                        ->table('subdomain_requests')
+                        ->where('subdomain', $tenantId)
+                        ->where('status', 'approved')
+                        ->first();
+                    
+                    if ($subdomainRequest && !empty($subdomainRequest->email)) {
+                        $email = $subdomainRequest->email;
+                        Log::info('Using email from subdomain request', ['email' => $email]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error querying central database', [
+                        'message' => $e->getMessage()
+                    ]);
+                }
+            }
+            
+            if (empty($email)) {
+                throw new \Exception("Cannot create admin user: No email found for tenant $tenantId");
+            }
+            
+            // Create admin user with the email
+            $user = User::create([
                 'name' => 'Admin',
                 'email' => $email,
-                'password' => $password, // This will be hashed by the User model's setPasswordAttribute method
+                'password' => $hashedPassword,
                 'role' => 'Admin',
                 'email_verified_at' => now(),
             ]);
             
-            Log::info('Tenant admin user created successfully');
+            Log::info('Admin user created successfully', [
+                'user_id' => $user->id,
+                'email' => $user->email
+            ]);
+            
+            Log::info('TENANT ADMIN SEEDER COMPLETE', ['tenant_id' => $tenantId]);
         } catch (\Exception $e) {
-            Log::error('Error creating tenant admin: ' . $e->getMessage(), [
-                'exception' => get_class($e),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
+            Log::error('FAILED TO CREATE ADMIN USER', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             
-            // Fallback to default admin with default password
-            User::create([
-                'name' => 'Admin',
-                'email' => '2001105940@student.buksu.edu.ph',
-                'password' => $password,
-                'role' => 'Admin',
-                'email_verified_at' => now(),
-            ]);
+            // Re-throw the exception to halt the tenant creation process
+            throw $e;
         }
     }
 }
+
+
+
 
 

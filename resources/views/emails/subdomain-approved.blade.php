@@ -54,13 +54,13 @@
     </div>
     
     <div class="content">
-        <p>Hello {{ $subdomainRequest->user->name ?? '' }},</p>
+        <p>Hello {{ $subdomainRequest->user->name ?? 'there' }},</p>
         
         <p>We're pleased to inform you that your subdomain request has been approved. Your new subdomain is now active and ready to use.</p>
         
         <div class="credentials">
             <p><strong>Subdomain:</strong> {{ $subdomainRequest->subdomain }}.localhost</p>
-            <p><strong>Email:</strong> {{ $subdomainRequest->user->email ?? '' }}</p>
+            <p><strong>Email:</strong> {{ $subdomainRequest->email ?? ($subdomainRequest->user->email ?? '') }}</p>
             <p><strong>Password:</strong> {{ $password }}</p>
         </div>
         
@@ -83,4 +83,5 @@
     </div>
 </body>
 </html>
+
 
