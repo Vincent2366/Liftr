@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 use App\Http\Controllers\Tenant\TenantAuthController;
+use App\Http\Controllers\Tenant\TenantRegisterController;
 use App\Http\Controllers\Tenant\DashboardController;
 use App\Http\Controllers\Tenant\UserController;
 use App\Http\Controllers\Tenant\SessionController;
@@ -48,11 +49,17 @@ Route::middleware([
     // Tenant Auth routes
     Route::get('/login', [TenantAuthController::class, 'showLoginForm'])
         ->middleware(['check.tenant.status'])
-        ->name('login');
-    
+        ->name('tenant.login');
+
     Route::post('/login', [TenantAuthController::class, 'login']);
     Route::post('/logout', [TenantAuthController::class, 'logout'])->name('logout');
-    
+
+    // Add tenant registration routes
+    Route::get('/register', [TenantRegisterController::class, 'showRegistrationForm'])
+        ->middleware(['check.tenant.status'])
+        ->name('tenant.register');
+    Route::post('/register', [TenantRegisterController::class, 'register']);
+
     // Keep the password reset routes using the original controller
     Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
@@ -121,6 +128,8 @@ Route::middleware([
     }
     return response()->json(['exists' => false]);
 });
+
+
 
 
 
