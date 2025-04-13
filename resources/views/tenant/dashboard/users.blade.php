@@ -8,7 +8,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Liftr - Dashboard</title>
+    <title>Liftr - Users</title>
 
     <!-- Custom fonts for this template-->
     <link href="{{ url('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
@@ -16,6 +16,9 @@
 
     <!-- Custom styles for this template-->
     <link href="{{ url('css/sb-admin-2.min.css') }}" rel="stylesheet">
+    
+    <!-- Custom styles for datatables -->
+    <link href="{{ url('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -38,7 +41,7 @@
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="{{ route('tenant.dashboard') }}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span>
@@ -54,7 +57,7 @@
             </div>
 
             <!-- Nav Item - Users -->
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="{{ route('tenant.users') }}">
                     <i class="fas fa-fw fa-users"></i>
                     <span>Users</span>
@@ -68,8 +71,6 @@
                     <span>Sessions</span>
                 </a>
             </li>
-
-          
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -110,7 +111,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ Auth::user()->name }}</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ Auth::check() ? Auth::user()->name : 'Guest' }}</span>
                                 <img class="img-profile rounded-circle" src="{{ asset('img/undraw_profile.svg') }}">
                             </a>
                             <!-- Dropdown - User Information -->
@@ -141,84 +142,61 @@
                 <div class="container-fluid">
 
                     <!-- Page Heading -->
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                            <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
-                        </a>
-                    </div>
+                    <h1 class="h3 mb-2 text-gray-800">Users Management</h1>
+                    <p class="mb-4">View and manage all users in your account.</p>
 
-                    <!-- Content Row -->
-                    <div class="row">
-
-                        <!-- Users Card -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                                Users (Monthly)</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ \App\Models\User::whereMonth('created_at', now()->month)->count() }}</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-users fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- DataTables Example -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                            <h6 class="m-0 font-weight-bold text-primary">Users</h6>
+                            <a href="{{ route('tenant.users.create') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Add New User
+                            </a>
                         </div>
-
-
-                       
-                        <!-- Clients Card -->
-                        <div class="col-xl-3 col-md-6 mb-4">
-                            <div class="card border-left-warning shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                                Sessions</div>
-                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $clientCount ?? '0' }}</div>
-                                        </div>
-                                        <div class="col-auto">
-                                            <i class="fas fa-user-tie fa-2x text-gray-300"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Content Row -->
-                    <div class="row">
-
-                       
-                        <div class="col-xl-12 col-lg-7">
-                            <div class="card shadow mb-4">
-                                
-                                <!-- <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Overview</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">View Options:</div>
-                                            <a class="dropdown-item" href="#">Monthly</a>
-                                            <a class="dropdown-item" href="#">Weekly</a>
-                                            <a class="dropdown-item" href="#">Daily</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="card-body">
-                                    <div class="chart-area">
-                                        <canvas id="myAreaChart"></canvas>
-                                    </div>
-                                </div> -->
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="usersDataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach(\App\Models\User::all() as $user)
+                                        <tr>
+                                            <td>{{ $user->id }}</td>
+                                            <td>{{ $user->name }}</td>
+                                            <td>{{ $user->email }}</td>
+                                            <td>
+                                                <span class="badge badge-{{ $user->role == 'Admin' ? 'primary' : 'secondary' }}">
+                                                    {{ $user->role }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $user->created_at->format('M d, Y') }}</td>
+                                            <td>
+                                                <a href="{{ route('tenant.users.edit', $user->id) }}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ route('tenant.users.show', $user->id) }}" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <form action="{{ route('tenant.users.destroy', $user->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -284,15 +262,17 @@
     <script src="{{ url('js/sb-admin-2.min.js') }}"></script>
 
     <!-- Page level plugins -->
-    <script src="{{ url('vendor/chart.js/Chart.min.js') }}"></script>
+    <script src="{{ url('vendor/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
 
     <!-- Page level custom scripts -->
-    <script src="{{ url('js/demo/chart-area-demo.js') }}"></script>
-</script>
-
+    <script>
+        $(document).ready(function() {
+            $('#usersDataTable').DataTable({
+                "order": [[0, "desc"]]
+            });
+        });
+    </script>
 </body>
 
 </html>
-
-
-

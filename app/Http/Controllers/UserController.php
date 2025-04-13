@@ -13,7 +13,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        return view('tenant.dashboard.users');
     }
 
     /**
@@ -69,3 +69,4 @@ class UserController extends Controller
         //
     }
 }
+

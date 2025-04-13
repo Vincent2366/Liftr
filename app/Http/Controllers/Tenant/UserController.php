@@ -12,7 +12,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        return view('tenant.users.index');
+        $users = \App\Models\User::all();
+        return view('tenant.dashboard.users', compact('users'));
     }
 
     /**
@@ -66,3 +67,4 @@ class UserController extends Controller
         return redirect()->route('tenant.users');
     }
 }
+
