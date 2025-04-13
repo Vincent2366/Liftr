@@ -149,9 +149,6 @@
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                             <h6 class="m-0 font-weight-bold text-primary">Users</h6>
-                            <a href="{{ route('tenant.users.create') }}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-plus"></i> Add New User
-                            </a>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -162,7 +159,7 @@
                                             <th>Name</th>
                                             <th>Email</th>
                                             <th>Role</th>
-                                            <th>Created</th>
+                                            <th>Joined</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -211,7 +208,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Liftr {{ date('Y') }}</span>
+                        <span>Copyright &copy; {{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }} {{ date('Y') }}</span>
                     </div>
                 </div>
             </footer>
