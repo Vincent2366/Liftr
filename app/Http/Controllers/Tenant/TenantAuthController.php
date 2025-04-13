@@ -66,12 +66,7 @@ class TenantAuthController extends Controller
 
     public function logout(Request $request)
     {
-        // Revoke the token that was used to authenticate the current request
-        if ($request->user()) {
-            $request->user()->currentAccessToken()->delete();
-        }
-        
-        Auth::guard('web')->logout();
+        Auth::guard('tenant')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
@@ -105,6 +100,7 @@ class TenantAuthController extends Controller
         ], 401);
     }
 }
+
 
 
 
