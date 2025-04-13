@@ -14,6 +14,11 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        return view('tenant.dashboard');
+        $userCount = \App\Models\User::whereMonth('created_at', now()->month)->count();
+        
+        return view('tenant.dashboard.tenantDashboard', [
+            'userCount' => $userCount,
+            // other variables...
+        ]);
     }
 }
