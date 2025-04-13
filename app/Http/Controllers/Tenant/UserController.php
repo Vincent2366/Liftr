@@ -61,10 +61,13 @@ class UserController extends Controller
     /**
      * Remove the specified user.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        // Delete logic
-        return redirect()->route('tenant.users');
+        $user = \App\Models\User::findOrFail($id);
+        $user->delete();
+        
+        return redirect()->route('tenant.users')->with('success', 'User deleted successfully');
     }
 }
+
 
