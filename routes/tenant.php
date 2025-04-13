@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 use App\Http\Controllers\Tenant\TenantAuthController;
@@ -17,19 +18,25 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
     'web',
-    'disable.csrf',
-])->get('/sanctum/csrf-cookie', function () {
-    return response()->json(['message' => 'CSRF cookie set']);
-});
-
-// Add a route to refresh CSRF token
-Route::middleware([
-    InitializeTenancyByDomain::class,
-    PreventAccessFromCentralDomains::class,
-    'web',
-    'disable.csrf',
-])->get('/refresh-csrf', function () {
-    return response()->json(['token' => csrf_token()]);
+])->get('/csrf-cookie', function (Request $request) {
+    $response = response()->json(['message' => 'CSRF cookie set']);
+    
+    // Explicitly set the XSRF-TOKEN cookie with the proper domain
+    $response->headers->setCookie(
+        cookie(
+            'XSRF-TOKEN', 
+            $request->session()->token(), 
+            120, 
+            '/', 
+            config('session.domain'), // Use the configured session domain
+            config('session.secure'), 
+            false, 
+            false, 
+            config('session.same_site')
+        )
+    );
+    
+    return $response;
 });
 
 // Main tenant routes
@@ -37,31 +44,26 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
     'web',
-    'disable.csrf',
 ])->group(function () {
     // Tenant Auth routes
-    Route::middleware([
-        \Illuminate\Session\Middleware\StartSession::class,
-    ])->group(function () {
-        Route::get('/login', [TenantAuthController::class, 'showLoginForm'])
-            ->middleware(['check.tenant.status'])
-            ->name('login');
-        
-        Route::post('/login', [TenantAuthController::class, 'login']);
-        Route::post('/api/login', [TenantAuthController::class, 'apiLogin']);
-        Route::post('/logout', [TenantAuthController::class, 'logout'])->name('logout');
-        
-        // Keep the password reset routes using the original controller
-        Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
-        Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
-    });
+    Route::get('/login', [TenantAuthController::class, 'showLoginForm'])
+        ->middleware(['check.tenant.status'])
+        ->name('login');
+    
+    Route::post('/login', [TenantAuthController::class, 'login']);
+    Route::post('/logout', [TenantAuthController::class, 'logout'])->name('logout');
+    
+    // Keep the password reset routes using the original controller
+    Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
 });
 
-// Protected tenant routes using Sanctum
+// Protected tenant routes using standard session auth
 Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
-    'auth:tenant',
+    'web',
+    'auth:tenant', // Keep the guard name but it now uses session driver
     'check.tenant.status'
 ])->group(function () {
     // Dashboard
@@ -103,18 +105,11 @@ Route::middleware([
     Route::get('/settings', [SettingController::class, 'index'])->name('tenant.settings');
 });
 
-// API-style login route (no CSRF)
-Route::middleware([
-    InitializeTenancyByDomain::class,
-    PreventAccessFromCentralDomains::class,
-    'web', // Add web middleware to ensure session is available
-])->post('/api/login', [TenantAuthController::class, 'apiLogin']);
-
 // Test route to check if user exists
 Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
-    'web', // Add web middleware to ensure session is available
+    'web',
 ])->get('/check-user/{email}', function ($email) {
     $user = \App\Models\User::where('email', $email)->first();
     if ($user) {
@@ -126,6 +121,10 @@ Route::middleware([
     }
     return response()->json(['exists' => false]);
 });
+
+
+
+
 
 
 

@@ -17,23 +17,21 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Register your middleware aliases
         $middleware->alias([
-            'disable.csrf' => DisableCsrfForTenants::class,
             'check.tenant.status' => CheckTenantStatus::class,
         ]);
         
         // Add session middleware to the web group
         $middleware->appendToGroup('web', \Illuminate\Session\Middleware\StartSession::class);
         
-        // Exclude specific routes from CSRF verification
+        // Ensure CSRF protection is enabled for all routes except specific ones
         $middleware->validateCsrfTokens(except: [
-            'api/login',
-            'refresh-csrf',
-            'sanctum/csrf-cookie',
+            'api/login', // Keep this if you still need an API login endpoint
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
+
 
 
 

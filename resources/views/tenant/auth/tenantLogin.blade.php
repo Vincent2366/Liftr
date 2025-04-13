@@ -96,65 +96,76 @@
     <!-- Custom scripts for all pages-->
     <script src="{{ url('/js/sb-admin-2.min.js') }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    const email = document.getElementById('email').value;
-                    const password = document.getElementById('password').value;
-                    const remember = document.getElementById('remember').checked;
-                    
-                    // First check if the user exists
-                    fetch('/check-user/' + encodeURIComponent(email))
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log('User check:', data);
-                            
-                            // Proceed with login attempt
-                            return fetch('/api/login', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    email: email,
-                                    password: password,
-                                    remember: remember
-                                })
-                            });
-                        })
-                        .then(response => {
-                            console.log('Response status:', response.status);
-                            return response.json().then(data => {
-                                console.log('Response data:', data);
-                                if (!response.ok) {
-                                    throw new Error(data.error || data.message || 'Login failed');
-                                }
-                                return data;
-                            });
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                // Store token and redirect
-                                localStorage.setItem('auth_token', data.token);
-                                window.location.href = data.redirect || '/dashboard';
-                            } else {
-                                alert('Login error: ' + (data.error || 'Unknown error'));
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Login error: ' + (error.message || 'An error occurred during login. Please try again.'));
-                        });
+// Fetch CSRF cookie before form submission
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch the CSRF cookie first
+    fetch('/csrf-cookie', {
+        method: 'GET',
+        credentials: 'include'
+    }).then(response => {
+        console.log('CSRF cookie fetched');
+    }).catch(error => {
+        console.error('Error fetching CSRF cookie:', error);
+    });
+
+    // Login form submission handler
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('/login', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+            },
+            credentials: 'include'
+        })
+        .then(response => {
+            // Check if the response is JSON
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json().then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    } else {
+                        // Show error message
+                        showError(data.error || 'Login failed');
+                    }
                 });
+            } else if (response.redirected) {
+                window.location.href = response.url;
+            } else if (response.ok) {
+                window.location.reload();
+            } else {
+                showError('Login failed. Please try again.');
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('An error occurred. Please try again.');
         });
-    </script>
+    });
+    
+    function showError(message) {
+        const errorElement = document.getElementById('error-message') || document.createElement('div');
+        errorElement.id = 'error-message';
+        errorElement.className = 'text-danger small mt-2';
+        errorElement.textContent = message;
+        
+        if (!document.getElementById('error-message')) {
+            document.querySelector('.form-group:nth-child(2)').appendChild(errorElement);
+        }
+    }
+});
+</script>
 </body>
 </html>
+
+
+
 
 
 
