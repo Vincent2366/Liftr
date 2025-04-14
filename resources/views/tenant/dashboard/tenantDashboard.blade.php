@@ -328,19 +328,26 @@
     <script>
         $(document).ready(function() {
             $('#appointmentsTable').DataTable({
-                "order": [[1, "desc"], [2, "desc"]], // Sort by date (column 1) and then time (column 2)
+                "order": [[1, "asc"], [2, "asc"]], // Sort by date (column 1) and then time (column 2) in ascending order
                 "pageLength": 10,
                 "responsive": true,
                 "language": {
                     "emptyTable": "No appointments found",
                     "zeroRecords": "No matching appointments found"
-                }
+                },
+                "columnDefs": [
+                    { 
+                        "type": "date", 
+                        "targets": 1 // Ensure column 1 (Date) is treated as date for proper sorting
+                    }
+                ]
             });
         });
     </script>
 </body>
 
 </html>
+
 
 
 
