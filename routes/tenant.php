@@ -73,41 +73,47 @@ Route::middleware([
     'auth:tenant', // Keep the guard name but it now uses session driver
     'check.tenant.status'
 ])->group(function () {
-    // Dashboard
+    // Dashboard - redirect based on role
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('tenant.dashboard');
     
-    // Resource routes
-    Route::resource('users', UserController::class)->names([
-        'index' => 'tenant.users',
-        'show' => 'tenant.users.show',
-        'create' => 'tenant.users.create',
-        'store' => 'tenant.users.store',
-        'edit' => 'tenant.users.edit',
-        'update' => 'tenant.users.update',
-        'destroy' => 'tenant.users.destroy',
-    ]);
+    // Admin routes
+    Route::middleware(['role:Admin'])->group(function () {
+        // Resource routes for admins
+        Route::resource('users', UserController::class)->names([
+            'index' => 'tenant.users',
+            'show' => 'tenant.users.show',
+            'create' => 'tenant.users.create',
+            'store' => 'tenant.users.store',
+            'edit' => 'tenant.users.edit',
+            'update' => 'tenant.users.update',
+            'destroy' => 'tenant.users.destroy',
+        ]);
+        
+        Route::resource('sessions', SessionController::class)->names([
+            'index' => 'tenant.sessions',
+            'show' => 'tenant.sessions.show',
+            'create' => 'tenant.sessions.create',
+            'store' => 'tenant.sessions.store',
+            'edit' => 'tenant.sessions.edit',
+            'update' => 'tenant.sessions.update',
+            'destroy' => 'tenant.sessions.destroy',
+        ]);
+        
+        Route::resource('clients', ClientController::class)->names([
+            'index' => 'tenant.clients',
+            'show' => 'tenant.clients.show',
+            'create' => 'tenant.clients.create',
+            'store' => 'tenant.clients.store',
+            'edit' => 'tenant.clients.edit',
+            'update' => 'tenant.clients.update',
+            'destroy' => 'tenant.clients.destroy',
+        ]);
+    });
     
-    Route::resource('sessions', SessionController::class)->names([
-        'index' => 'tenant.sessions',
-        'show' => 'tenant.sessions.show',
-        'create' => 'tenant.sessions.create',
-        'store' => 'tenant.sessions.store',
-        'edit' => 'tenant.sessions.edit',
-        'update' => 'tenant.sessions.update',
-        'destroy' => 'tenant.sessions.destroy',
-    ]);
+    // User dashboard route
+    Route::get('/user-dashboard', [DashboardController::class, 'userDashboard'])->name('tenant.user.dashboard');
     
-    Route::resource('clients', ClientController::class)->names([
-        'index' => 'tenant.clients',
-        'show' => 'tenant.clients.show',
-        'create' => 'tenant.clients.create',
-        'store' => 'tenant.clients.store',
-        'edit' => 'tenant.clients.edit',
-        'update' => 'tenant.clients.update',
-        'destroy' => 'tenant.clients.destroy',
-    ]);
-    
-    // Profile and settings
+    // Profile and settings - available to all authenticated users
     Route::get('/profile', [ProfileController::class, 'index'])->name('tenant.profile');
     Route::get('/settings', [SettingController::class, 'index'])->name('tenant.settings');
 });
@@ -128,6 +134,7 @@ Route::middleware([
     }
     return response()->json(['exists' => false]);
 });
+
 
 
 
