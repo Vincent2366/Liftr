@@ -18,11 +18,23 @@ class DashboardController extends Controller
         $user = Auth::user();
         
         if ($user->role === 'Admin') {
+            // Get monthly user count
             $userCount = \App\Models\User::whereMonth('created_at', now()->month)->count();
+            
+            // Get client/session count
+            $clientCount = \App\Models\Appointment::count();
+            
+            // Get recent appointments
+            $appointments = \App\Models\Appointment::with('user')
+                                    ->orderBy('appointment_date', 'desc')
+                                    ->orderBy('appointment_time', 'desc')
+                                    ->take(10)
+                                    ->get();
             
             return view('tenant.dashboard.tenantDashboard', [
                 'userCount' => $userCount,
-                // other variables...
+                'clientCount' => $clientCount,
+                'appointments' => $appointments
             ]);
         }
         
@@ -42,4 +54,5 @@ class DashboardController extends Controller
         ]);
     }
 }
+
 

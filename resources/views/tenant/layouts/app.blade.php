@@ -59,7 +59,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('tenant.settings') }}">
                     <i class="fas fa-fw fa-cog"></i>
-                    <span>Settings</span>
+                    <span>Session</span>
                 </a>
             </li>
 

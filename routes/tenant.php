@@ -13,6 +13,7 @@ use App\Http\Controllers\Tenant\ClientController;
 use App\Http\Controllers\Tenant\ProfileController;
 use App\Http\Controllers\Tenant\SettingController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Tenant\AppointmentController;
 
 // CSRF cookie route with proper middleware
 Route::middleware([
@@ -112,10 +113,21 @@ Route::middleware([
     
     // User dashboard route
     Route::get('/user-dashboard', [DashboardController::class, 'userDashboard'])->name('tenant.user.dashboard');
-    
+
+    // Appointments
+    Route::post('/appointments', [AppointmentController::class, 'store'])->name('tenant.appointments.store');
+
     // Profile and settings - available to all authenticated users
     Route::get('/profile', [ProfileController::class, 'index'])->name('tenant.profile');
     Route::get('/settings', [SettingController::class, 'index'])->name('tenant.settings');
+});
+
+// Admin-only routes
+Route::middleware(['auth:tenant', 'role:Admin'])->group(function () {
+    // Appointments management
+    Route::get('/appointments', [AppointmentController::class, 'index'])->name('tenant.appointments');
+    Route::patch('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('tenant.appointments.update');
+    Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('tenant.appointments.destroy');
 });
 
 // Test route to check if user exists
@@ -134,6 +146,9 @@ Route::middleware([
     }
     return response()->json(['exists' => false]);
 });
+
+
+
 
 
 

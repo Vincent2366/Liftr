@@ -194,33 +194,68 @@
 
                     <!-- Content Row -->
                     <div class="row">
-
-                       
-                        <div class="col-xl-12 col-lg-7">
+                        <!-- Appointments Card -->
+                        <div class="col-xl-12 col-lg-12">
                             <div class="card shadow mb-4">
-                                
-                                <!-- <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Overview</h6>
-                                    <div class="dropdown no-arrow">
-                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
-                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                                        </a>
-                                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                                            aria-labelledby="dropdownMenuLink">
-                                            <div class="dropdown-header">View Options:</div>
-                                            <a class="dropdown-item" href="#">Monthly</a>
-                                            <a class="dropdown-item" href="#">Weekly</a>
-                                            <a class="dropdown-item" href="#">Daily</a>
-                                        </div>
+                                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Recent Gym Appointments</h6>
+                                    
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered" id="appointmentsTable" width="100%" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>User</th>
+                                                    <th>Date</th>
+                                                    <th>Time</th>
+                                                    <th>Notes</th>
+                                                    <!-- <th>Status</th>
+                                                    <th>Actions</th> -->
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($appointments ?? [] as $appointment)
+                                                <tr>
+                                                    <td>{{ $appointment->user->name }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($appointment->appointment_time)->format('g:i A') }}</td>
+                                                    <td>{{ $appointment->notes ?? 'No notes' }}</td>
+                                                    <!-- <td>
+                                                        <span class="badge badge-{{ $appointment->status == 'approved' ? 'success' : ($appointment->status == 'pending' ? 'warning' : 'danger') }}">
+                                                            {{ ucfirst($appointment->status) }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group" role="group">
+                                                            <form action="{{ route('tenant.appointments.update', $appointment->id) }}" method="POST" class="d-inline">
+                                                                @csrf
+                                                                @method('PATCH')
+                                                                <input type="hidden" name="status" value="approved">
+                                                                <button type="submit" class="btn btn-sm btn-success" {{ $appointment->status == 'approved' ? 'disabled' : '' }}>
+                                                                    <i class="fas fa-check"></i>
+                                                                </button>
+                                                            </form>
+                                                            <form action="{{ route('tenant.appointments.update', $appointment->id) }}" method="POST" class="d-inline">
+                                                                @csrf
+                                                                @method('PATCH')
+                                                                <input type="hidden" name="status" value="rejected">
+                                                                <button type="submit" class="btn btn-sm btn-danger" {{ $appointment->status == 'rejected' ? 'disabled' : '' }}>
+                                                                    <i class="fas fa-times"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </td> -->
+                                                </tr>
+                                                @empty
+                                                <tr>
+                                                    <td colspan="6" class="text-center">No appointments found</td>
+                                                </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                                
-                                <div class="card-body">
-                                    <div class="chart-area">
-                                        <canvas id="myAreaChart"></canvas>
-                                    </div>
-                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -235,7 +270,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Liftr {{ date('Y') }}</span>
+                        <span>Copyright &copy; {{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }}{{ date('Y') }}</span>
                     </div>
                 </div>
             </footer>
@@ -286,15 +321,31 @@
     <script src="{{ url('js/sb-admin-2.min.js') }}"></script>
 
     <!-- Page level plugins -->
-    <script src="{{ url('vendor/chart.js/Chart.min.js') }}"></script>
+    <script src="{{ url('vendor/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
 
     <!-- Page level custom scripts -->
-    <script src="{{ url('js/demo/chart-area-demo.js') }}"></script>
-</script>
-
+    <script>
+        $(document).ready(function() {
+            $('#appointmentsTable').DataTable({
+                "order": [[1, "desc"], [2, "desc"]], // Sort by date (column 1) and then time (column 2)
+                "pageLength": 10,
+                "responsive": true,
+                "language": {
+                    "emptyTable": "No appointments found",
+                    "zeroRecords": "No matching appointments found"
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
+
+
+
+
+
 
 
 

@@ -22,32 +22,40 @@ class TenantAuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // Log the login attempt (optional)
+        // Log login attempt
         \Log::info('Login attempt', [
             'email' => $credentials['email'],
             'remember' => $request->boolean('remember'),
-            'tenant' => tenant() ? tenant()->id : 'none'
+            'tenant' => tenant('id')
         ]);
 
         if (Auth::guard('tenant')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             
-            // Log successful login (optional)
+            // Get the authenticated user
+            $user = Auth::guard('tenant')->user();
+            
+            // Log successful login
             \Log::info('Login successful', [
-                'user_id' => Auth::guard('tenant')->id(),
+                'user_id' => $user->id,
                 'email' => $credentials['email']
             ]);
+            
+            // Redirect based on user role
+            $redirectTo = $user->role === 'Admin' 
+                ? route('tenant.dashboard') 
+                : route('tenant.user.dashboard');
             
             // If it's an AJAX request or JSON is expected, return JSON
             if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'redirect' => route('tenant.dashboard')
+                    'redirect' => $redirectTo
                 ]);
             }
             
             // Otherwise, redirect
-            return redirect()->intended(route('tenant.dashboard'));
+            return redirect()->intended($redirectTo);
         }
 
         // If it's an AJAX request or JSON is expected, return JSON
@@ -100,6 +108,7 @@ class TenantAuthController extends Controller
         ], 401);
     }
 }
+
 
 
 
