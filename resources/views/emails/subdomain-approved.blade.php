@@ -50,16 +50,16 @@
 </head>
 <body>
     <div class="header">
-        <h1>Your Subdomain Has Been Approved!</h1>
+        <h1>Your App Has Been Approved!</h1>
     </div>
     
     <div class="content">
         <p>Hello {{ $subdomainRequest->user->name ?? 'there' }},</p>
         
-        <p>We're pleased to inform you that your subdomain request has been approved. Your new subdomain is now active and ready to use.</p>
+        <p>We're pleased to inform you that your application request has been approved. Your new application is now active and ready to use.</p>
         
         <div class="credentials">
-            <p><strong>Subdomain:</strong> {{ $subdomainRequest->subdomain }}.localhost</p>
+            <p><strong>Subdomain:</strong> {{ $subdomainRequest->subdomain }}.localhost:8000</p>
             <p><strong>Email:</strong> {{ $subdomainRequest->email ?? ($subdomainRequest->user->email ?? '') }}</p>
             <p><strong>Password:</strong> {{ $password }}</p>
         </div>
@@ -68,9 +68,9 @@
         
         <p>You can log in to your subdomain using the credentials above after verifying your email. We recommend changing your password after your first login for security purposes.</p>
         
-        <a href="http://{{ $subdomainRequest->subdomain }}.localhost:8000/login" class="button">Visit Your Subdomain</a>
+        <a href="http://{{ $subdomainRequest->subdomain }}.localhost:8000/login" class="button">Visit Your App</a>
         
-        <p>If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+        <p>If you have any questions or need assistance, please don't hesitate to contact our support team (CHARIZ).</p>
         
         <p>Thank you for choosing Liftr!</p>
         
@@ -78,7 +78,7 @@
         
         <div class="footer">
             <p>© {{ date('Y') }} Liftr. All rights reserved.</p>
-            <p>This is an automated email, please do not reply.</p>
+            <p>This is an automated email, please do not reply. :P</p>
         </div>
     </div>
 </body>
