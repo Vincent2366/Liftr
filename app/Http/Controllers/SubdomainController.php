@@ -178,7 +178,125 @@ class SubdomainController extends Controller
         $tenant = Tenant::findOrFail($id);
         return view('admin.tenant-upgrade', compact('tenant'));
     }
+
+    /**
+     * Update tenant plan
+     */
+    public function updatePlan(Request $request, $id)
+    {
+        // Enable query logging
+        \DB::enableQueryLog();
+        
+        \Log::info('Update plan request received', [
+            'tenant_id' => $id,
+            'plan' => $request->plan,
+            'request_data' => $request->all()
+        ]);
+        
+        try {
+            $tenant = Tenant::findOrFail($id);
+            $oldPlan = $tenant->plan ?? 'free';
+            $newPlan = $request->plan;
+            
+            \Log::info('Current tenant data before update', [
+                'tenant_id' => $tenant->id,
+                'current_plan' => $oldPlan,
+                'attributes' => $tenant->getAttributes()
+            ]);
+            
+            // Direct update using query builder to ensure it's saved
+            \DB::table('tenants')
+                ->where('id', $id)
+                ->update(['plan' => $newPlan, 'updated_at' => now()]);
+                
+            // Log the SQL query for debugging
+            \Log::info('SQL query executed', [
+                'query' => \DB::getQueryLog()[count(\DB::getQueryLog())-1] ?? 'Query logging not enabled'
+            ]);
+            
+            // Force refresh the tenant model to get updated data
+            $tenant = Tenant::findOrFail($id);
+            
+            \Log::info('Tenant data after direct update', [
+                'tenant_id' => $tenant->id,
+                'new_plan' => $tenant->plan,
+                'attributes' => $tenant->getAttributes()
+            ]);
+            
+            // If downgrading from premium to free, handle user limits
+            if ($oldPlan == 'premium' && $newPlan == 'free') {
+                // Run this in the tenant context
+                tenancy()->initialize($tenant);
+                
+                // Get all users
+                $users = \App\Models\User::orderBy('created_at', 'asc')->get();
+                
+                // Keep the oldest 3 users active, disable the rest
+                $activeUsers = $users->take(3);
+                $disabledUsers = $users->slice(3);
+                
+                // Soft-disable extra users
+                foreach ($disabledUsers as $user) {
+                    $user->update(['status' => 'disabled']);
+                    
+                    \Log::info('User disabled due to plan downgrade', [
+                        'user_id' => $user->id,
+                        'user_email' => $user->email,
+                        'tenant' => $tenant->id
+                    ]);
+                }
+                
+                tenancy()->end();
+            }
+            
+            // If upgrading from free to premium, reactivate disabled users
+            if ($oldPlan == 'free' && $newPlan == 'premium') {
+                // Run this in the tenant context
+                tenancy()->initialize($tenant);
+                
+                // Reactivate all disabled users
+                $disabledUsers = \App\Models\User::where('status', 'disabled')->get();
+                $reactivatedCount = $disabledUsers->count();
+                
+                foreach ($disabledUsers as $user) {
+                    $user->update(['status' => 'active']);
+                }
+                
+                \Log::info('Tenant upgraded to premium plan', [
+                    'tenant' => $tenant->id,
+                    'reactivated_users_count' => $reactivatedCount
+                ]);
+                
+                tenancy()->end();
+            }
+            
+            return response()->json([
+                'success' => true, 
+                'message' => 'Plan updated successfully',
+                'plan' => $newPlan
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error updating tenant plan', [
+                'tenant_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'Error updating plan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
+
+
+
+
+
+
+
+
 
 
 

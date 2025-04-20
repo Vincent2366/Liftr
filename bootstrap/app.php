@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'check.tenant.status' => CheckTenantStatus::class,
             'role' => CheckRole::class,
+            'check.free.plan.limit' => \App\Http\Middleware\CheckFreePlanUserLimit::class,
         ]);
         
         // Add session middleware to the web group
@@ -33,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
+
 
 
 

@@ -55,11 +55,13 @@ Route::middleware([
     Route::post('/login', [TenantAuthController::class, 'login']);
     Route::post('/logout', [TenantAuthController::class, 'logout'])->name('logout');
 
-    // Add tenant registration routes
-    Route::get('/register', [TenantRegisterController::class, 'showRegistrationForm'])
-        ->middleware(['check.tenant.status'])
-        ->name('tenant.register');
-    Route::post('/register', [TenantRegisterController::class, 'register']);
+    // Add tenant registration routes with middleware
+    Route::middleware(['check.tenant.status', 'check.free.plan.limit'])
+        ->group(function () {
+            Route::get('/register', [TenantRegisterController::class, 'showRegistrationForm'])
+                ->name('tenant.register');
+            Route::post('/register', [TenantRegisterController::class, 'register']);
+        });
 
     // Keep the password reset routes using the original controller
     Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
@@ -146,6 +148,7 @@ Route::middleware([
     }
     return response()->json(['exists' => false]);
 });
+
 
 
 

@@ -31,6 +31,16 @@ class TenantRegisterController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Check if tenant is on free plan and already has 3 users
+        if (tenant()->plan === \App\Models\Tenant::PLAN_FREE) {
+            $userCount = User::count();
+            if ($userCount >= 3) {
+                return response()->view('tenant.errors.user-limit', [
+                    'message' => 'Free plan is limited to 3 users. Please upgrade to add more users.'
+                ], 403);
+            }
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -42,13 +52,7 @@ class TenantRegisterController extends Controller
 
         Auth::guard('tenant')->login($user);
 
-        if ($request->expectsJson() || $request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'redirect' => route('tenant.dashboard')
-            ]);
-        }
-
         return redirect()->route('tenant.dashboard');
     }
 }
+

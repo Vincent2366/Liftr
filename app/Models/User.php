@@ -22,6 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'role',
+        'status',
         'email_verified_at',
     ];
 
@@ -68,6 +69,7 @@ class User extends Authenticatable implements MustVerifyEmail
             : \Illuminate\Support\Facades\Hash::make($value);
     }
 }
+
 
 
 

@@ -36,6 +36,7 @@ foreach (config('tenancy.central_domains') as $domain) {
             Route::post('/admin/tenant/{id}/freeze', [SubdomainController::class, 'freeze'])->name('tenant.freeze');
             Route::post('/admin/tenant/{id}/unfreeze', [SubdomainController::class, 'unfreeze'])->name('tenant.unfreeze');
             Route::get('/admin/tenant/{id}/upgrade', [SubdomainController::class, 'upgrade'])->name('tenant.upgrade');
+            Route::post('/admin/tenant/{id}/update-plan', [SubdomainController::class, 'updatePlan'])->name('tenant.update-plan.ajax');
         });
     });
 }
@@ -49,5 +50,22 @@ foreach (config('tenancy.central_domains') as $domain) {
 
 // require __DIR__.'/auth.php'; moved inside the domain group
 
+// Add a temporary debug route
+Route::get('/debug/tenant-schema', function() {
+    $columns = \Illuminate\Support\Facades\Schema::getColumnListing('tenants');
+    $tenants = \App\Models\Tenant::all()->map(function($tenant) {
+        return [
+            'id' => $tenant->id,
+            'attributes' => $tenant->getAttributes(),
+            'plan' => $tenant->plan,
+            'data' => $tenant->data
+        ];
+    });
+    
+    return [
+        'columns' => $columns,
+        'tenants' => $tenants
+    ];
+})->middleware(['auth', 'role:admin']);
 
 

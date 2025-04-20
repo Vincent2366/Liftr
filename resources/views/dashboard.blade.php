@@ -160,9 +160,15 @@
                                             </form>
                                         @endif
                                         
-                                        <a href="{{ route('tenant.upgrade', $tenant->id) }}" class="btn btn-success btn-sm">
-                                            <i class="fas fa-arrow-up"></i> Upgrade
-                                        </a>
+                                        @if($tenant->plan == \App\Models\Tenant::PLAN_FREE)
+                                            <a href="#" onclick="openSubscriptionModal('premium', '{{ $tenant->id }}'); return false;" class="btn btn-success btn-sm">
+                                                <i class="fas fa-arrow-up"></i> Upgrade
+                                            </a>
+                                        @else
+                                            <a href="#" onclick="openPlanModal('free', '{{ $tenant->id }}'); return false;" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-arrow-down"></i> Downgrade
+                                            </a>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach
@@ -192,6 +198,13 @@
 </x-app-layout>
 
 
+
+
+
+@include('components.plan-modals')
+
+<!-- Add this somewhere in your dashboard view -->
+<input type="hidden" id="current-tenant-id" value="{{ $tenant->id ?? '' }}">
 
 
 
