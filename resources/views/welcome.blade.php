@@ -17,7 +17,7 @@
             <link href="{{ asset('css/welcome.css') }}" rel="stylesheet">
         @endif
     </head>
-    <body>
+    <body class="bg-gray-100 dark:bg-gray-900">
         <div class="container">
             <header class="header-nav">
                 @if (Route::has('login'))
@@ -133,6 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 
 
 
