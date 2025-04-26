@@ -223,8 +223,8 @@ class SubdomainController extends Controller
                 'attributes' => $tenant->getAttributes()
             ]);
             
-            // If downgrading from premium to free, handle user limits
-            if ($oldPlan == 'premium' && $newPlan == 'free') {
+            // If downgrading from premium or ultimate to free, handle user limits
+            if (($oldPlan == 'premium' || $oldPlan == 'ultimate') && $newPlan == 'free') {
                 // Run this in the tenant context
                 tenancy()->initialize($tenant);
                 
@@ -249,8 +249,8 @@ class SubdomainController extends Controller
                 tenancy()->end();
             }
             
-            // If upgrading from free to premium, reactivate disabled users
-            if ($oldPlan == 'free' && $newPlan == 'premium') {
+            // If upgrading from free to premium or ultimate, reactivate disabled users
+            if ($oldPlan == 'free' && ($newPlan == 'premium' || $newPlan == 'ultimate')) {
                 // Run this in the tenant context
                 tenancy()->initialize($tenant);
                 
@@ -260,10 +260,17 @@ class SubdomainController extends Controller
                 
                 foreach ($disabledUsers as $user) {
                     $user->update(['status' => 'active']);
+                    
+                    \Log::info('User reactivated due to plan upgrade', [
+                        'user_id' => $user->id,
+                        'user_email' => $user->email,
+                        'tenant' => $tenant->id
+                    ]);
                 }
                 
-                \Log::info('Tenant upgraded to premium plan', [
+                \Log::info('Tenant upgraded from free plan', [
                     'tenant' => $tenant->id,
+                    'new_plan' => $newPlan,
                     'reactivated_users_count' => $reactivatedCount
                 ]);
                 
@@ -289,6 +296,10 @@ class SubdomainController extends Controller
         }
     }
 }
+
+
+
+
 
 
 

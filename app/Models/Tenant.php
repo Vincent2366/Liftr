@@ -19,6 +19,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     // Plan constants
     const PLAN_FREE = 'free';
     const PLAN_PREMIUM = 'premium';
+    const PLAN_ULTIMATE = 'ultimate';
     
     protected $fillable = [
         'id',
@@ -52,6 +53,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         return self::PLAN_FREE;
     }
 }
+
 
 
 

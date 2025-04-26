@@ -161,12 +161,25 @@
                                         @endif
                                         
                                         @if($tenant->plan == \App\Models\Tenant::PLAN_FREE)
-                                            <a href="#" onclick="openSubscriptionModal('premium', '{{ $tenant->id }}'); return false;" class="btn btn-success btn-sm">
-                                                <i class="fas fa-arrow-up"></i> Upgrade
+                                            <a href="#" onclick="openSubscriptionModal('premium', '{{ $tenant->id }}'); return false;" class="btn btn-success btn-sm me-1">
+                                                <i class="fas fa-arrow-up"></i> Upgrade to Premium
+                                            </a>
+                                            <a href="#" onclick="openSubscriptionModal('ultimate', '{{ $tenant->id }}'); return false;" class="btn btn-info btn-sm">
+                                                <i class="fas fa-crown"></i> Upgrade to Ultimate
+                                            </a>
+                                        @elseif($tenant->plan == \App\Models\Tenant::PLAN_PREMIUM)
+                                            <a href="#" onclick="openSubscriptionModal('ultimate', '{{ $tenant->id }}'); return false;" class="btn btn-info btn-sm me-1">
+                                                <i class="fas fa-crown"></i> Upgrade to Ultimate
+                                            </a>
+                                            <a href="#" onclick="openPlanModal('free', '{{ $tenant->id }}'); return false;" class="btn btn-warning btn-sm">
+                                                <i class="fas fa-arrow-down"></i> Downgrade to Free
                                             </a>
                                         @else
+                                            <a href="#" onclick="openPlanModal('premium', '{{ $tenant->id }}'); return false;" class="btn btn-warning btn-sm me-1">
+                                                <i class="fas fa-arrow-down"></i> Downgrade to Premium
+                                            </a>
                                             <a href="#" onclick="openPlanModal('free', '{{ $tenant->id }}'); return false;" class="btn btn-warning btn-sm">
-                                                <i class="fas fa-arrow-down"></i> Downgrade
+                                                <i class="fas fa-arrow-down"></i> Downgrade to Free
                                             </a>
                                         @endif
                                     </td>
@@ -205,6 +218,8 @@
 
 <!-- Add this somewhere in your dashboard view -->
 <input type="hidden" id="current-tenant-id" value="{{ $tenant->id ?? '' }}">
+
+
 
 
 
