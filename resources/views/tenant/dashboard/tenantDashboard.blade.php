@@ -65,7 +65,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('tenant.sessions') }}">
                     <i class="fas fa-fw fa-calendar"></i>
-                    <span>Sessions</span>
+                    <span>Activity</span>
                 </a>
             </li>
 
@@ -356,6 +356,7 @@
 </body>
 
 </html>
+
 
 
 

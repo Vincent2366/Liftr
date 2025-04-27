@@ -68,7 +68,16 @@ class User extends Authenticatable implements MustVerifyEmail
             ? $value
             : \Illuminate\Support\Facades\Hash::make($value);
     }
+
+    /**
+     * Get the activities for the user.
+     */
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
+    }
 }
+
 
 
 

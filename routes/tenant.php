@@ -92,15 +92,18 @@ Route::middleware([
             'destroy' => 'tenant.users.destroy',
         ]);
         
-        Route::resource('sessions', SessionController::class)->names([
-            'index' => 'tenant.sessions',
+        Route::resource('activities', SessionController::class)->names([
+            'index' => 'tenant.sessions', // Keep the old route name for now to avoid breaking links
             'show' => 'tenant.sessions.show',
             'create' => 'tenant.sessions.create',
             'store' => 'tenant.sessions.store',
             'edit' => 'tenant.sessions.edit',
             'update' => 'tenant.sessions.update',
             'destroy' => 'tenant.sessions.destroy',
-        ]);
+        ])->except(['index']); // Exclude the default index route
+
+        // Add a custom route for the activity index
+        Route::get('/activities', [SessionController::class, 'activityIndex'])->name('tenant.sessions');
         
         Route::resource('clients', ClientController::class)->names([
             'index' => 'tenant.clients',
@@ -115,6 +118,11 @@ Route::middleware([
     
     // User dashboard route
     Route::get('/user-dashboard', [DashboardController::class, 'userDashboard'])->name('tenant.user.dashboard');
+
+    // User activity routes
+    Route::get('/activity', [SessionController::class, 'userActivity'])->name('tenant.user.activity');
+    Route::post('/activity/start', [SessionController::class, 'startActivity'])->name('tenant.user.activity.start');
+    Route::post('/activity/stop', [SessionController::class, 'stopActivity'])->name('tenant.user.activity.stop');
 
     // Appointments
     Route::post('/appointments', [AppointmentController::class, 'store'])->name('tenant.appointments.store');
@@ -148,6 +156,11 @@ Route::middleware([
     }
     return response()->json(['exists' => false]);
 });
+
+
+
+
+
 
 
 

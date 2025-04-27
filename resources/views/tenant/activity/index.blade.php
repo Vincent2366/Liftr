@@ -16,6 +16,7 @@
 
     <!-- Custom styles for this template-->
     <link href="{{ url('css/sb-admin-2.min.css') }}" rel="stylesheet">
+    <link href="{{ url('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -38,27 +39,33 @@
             <hr class="sidebar-divider my-0">
 
             <!-- Nav Item - Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" href="{{ route('tenant.user.dashboard') }}">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('tenant.dashboard') }}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
+                    <span>Dashboard</span>
+                </a>
             </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Nav Item - Profile -->
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Management
+            </div>
+
+            <!-- Nav Item - Users -->
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('tenant.profile') }}">
-                    <i class="fas fa-fw fa-user"></i>
-                    <span>Profile</span>
+                <a class="nav-link" href="{{ route('tenant.users') }}">
+                    <i class="fas fa-fw fa-users"></i>
+                    <span>Users</span>
                 </a>
             </li>
 
-            <!-- Nav Item - Settings -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('tenant.user.activity') }}">
-                    <i class="fas fa-fw fa-dumbbell"></i>
+            <!-- Nav Item - Sessions -->
+            <li class="nav-item active">
+                <a class="nav-link" href="{{ route('tenant.sessions') }}">
+                    <i class="fas fa-fw fa-calendar"></i>
                     <span>Activity</span>
                 </a>
             </li>
@@ -69,6 +76,13 @@
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+            <!-- Sidebar Message -->
+            <div class="sidebar-card d-none d-lg-flex">
+                <img class="sidebar-card-illustration mb-2" src="{{ asset('img/undraw_rocket.svg') }}" alt="...">
+                <p class="text-center mb-2"><strong>Liftr Pro</strong> is packed with premium features, components, and more!</p>
+                <a class="btn btn-success btn-sm" href="#">Upgrade to Pro!</a>
             </div>
 
         </ul>
@@ -90,8 +104,6 @@
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
-
-                        <div class="topbar-divider d-none d-sm-block"></div>
 
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
@@ -128,7 +140,61 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-                @yield('content')
+                <div class="container-fluid">
+                    <!-- Page Heading -->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <h1 class="h3 mb-0 text-gray-800">User Activities</h1>
+                    </div>
+
+                    <!-- Activities Table -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3">
+                            <h6 class="m-0 font-weight-bold text-primary">All Activities</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="activitiesTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Date</th>
+                                            <th>Start Time</th>
+                                            <th>End Time</th>
+                                            <th>Duration</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($activities as $activity)
+                                        <tr>
+                                            <td>{{ $activity->user->name }}</td>
+                                            <td>{{ $activity->start_time->format('Y-m-d') }}</td>
+                                            <td>{{ $activity->start_time->format('h:i A') }}</td>
+                                            <td>{{ $activity->end_time ? $activity->end_time->format('h:i A') : 'In Progress' }}</td>
+                                            <td>
+                                                @if($activity->end_time)
+                                                    {{ $activity->start_time->diffForHumans($activity->end_time, true) }}
+                                                @else
+                                                    {{ $activity->start_time->diffForHumans(now(), true) }}
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($activity->status == 'active')
+                                                    <span class="badge badge-success">Active</span>
+                                                @elseif($activity->status == 'completed')
+                                                    <span class="badge badge-primary">Completed</span>
+                                                @else
+                                                    <span class="badge badge-secondary">{{ ucfirst($activity->status) }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- /.container-fluid -->
 
             </div>
@@ -165,8 +231,31 @@
     <!-- Custom scripts for all pages-->
     <script src="{{ url('js/sb-admin-2.min.js') }}"></script>
 
+    <!-- DataTables -->
+    <script src="{{ url('vendor/datatables/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#activitiesTable').DataTable({
+                "order": [[ 1, "desc" ]],
+                "pageLength": 15,
+                "responsive": true,
+                "language": {
+                    "emptyTable": "No activities found",
+                    "zeroRecords": "No matching activities found",
+                    "search": "Search activities:"
+                },
+                "columnDefs": [
+                    { 
+                        "type": "date", 
+                        "targets": 1 // Ensure column 1 (Date) is treated as date for proper sorting
+                    }
+                ]
+            });
+        });
+    </script>
 </body>
 
 </html>
-
 
