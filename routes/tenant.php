@@ -138,7 +138,8 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
     'web',
     'auth:tenant', 
-    'role:Admin'
+    'role:Admin',
+    'check.tenant.status' // Add this middleware
 ])->group(function () {
     // Appointments management
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('tenant.appointments');
@@ -155,7 +156,8 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
     'web',
     'auth:tenant',
-    'role:Admin'
+    'role:Admin',
+    'check.tenant.status' // Add this middleware
 ])->group(function () {
     Route::resource('activities', SessionController::class)->names([
         'index' => 'tenant.sessions', // Keep the old route name for now to avoid breaking links
@@ -187,6 +189,8 @@ Route::middleware([
     }
     return response()->json(['exists' => false]);
 });
+
+
 
 
 
