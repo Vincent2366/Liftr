@@ -80,12 +80,7 @@
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
 
-            <!-- Sidebar Message -->
-            <div class="sidebar-card d-none d-lg-flex">
-                <img class="sidebar-card-illustration mb-2" src="{{ asset('img/undraw_rocket.svg') }}" alt="...">
-                <p class="text-center mb-2"><strong>Liftr Pro</strong> is packed with premium features, components, and more!</p>
-                <a class="btn btn-success btn-sm" href="#">Upgrade to Pro!</a>
-            </div>
+            
 
         </ul>
         <!-- End of Sidebar -->
@@ -164,7 +159,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach(\App\Models\User::all() as $user)
+                                        @foreach(\App\Models\User::where('role', '!=', 'Admin')->get() as $user)
                                         <tr>
                                             <td>{{ $user->id }}</td>
                                             <td>{{ $user->name }}</td>
@@ -270,4 +265,5 @@
 </body>
 
 </html>
+
 
