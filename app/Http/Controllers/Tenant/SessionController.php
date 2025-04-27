@@ -161,10 +161,6 @@ class SessionController extends Controller
         $pdf->AliasNbPages(); // For page numbering with {nb}
         $pdf->AddPage();
         
-        // Add tenant name
-        $pdf->SetFont('Arial', 'B', 10);
-        $pdf->Cell(0, 10, 'Tenant: ' . (tenant()->name ?? 'Unknown'), 0, 1, 'R');
-        
         // Add summary section
         $pdf->AddSummary($activities);
         
@@ -178,6 +174,7 @@ class SessionController extends Controller
         ]);
     }
 }
+
 
 
 
