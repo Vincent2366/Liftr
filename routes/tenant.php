@@ -133,11 +133,42 @@ Route::middleware([
 });
 
 // Admin-only routes
-Route::middleware(['auth:tenant', 'role:Admin'])->group(function () {
+Route::middleware([
+    InitializeTenancyByDomain::class,
+    PreventAccessFromCentralDomains::class,
+    'web',
+    'auth:tenant', 
+    'role:Admin'
+])->group(function () {
     // Appointments management
     Route::get('/appointments', [AppointmentController::class, 'index'])->name('tenant.appointments');
     Route::patch('/appointments/{appointment}', [AppointmentController::class, 'update'])->name('tenant.appointments.update');
     Route::delete('/appointments/{appointment}', [AppointmentController::class, 'destroy'])->name('tenant.appointments.destroy');
+    
+    // Activity reports - Use a completely different URL path to avoid conflicts
+    Route::get('/activity-report', [SessionController::class, 'generateReport'])->name('tenant.activities.report');
+});
+
+// Move the resource routes to a separate group to avoid conflicts
+Route::middleware([
+    InitializeTenancyByDomain::class,
+    PreventAccessFromCentralDomains::class,
+    'web',
+    'auth:tenant',
+    'role:Admin'
+])->group(function () {
+    Route::resource('activities', SessionController::class)->names([
+        'index' => 'tenant.sessions', // Keep the old route name for now to avoid breaking links
+        'show' => 'tenant.sessions.show',
+        'create' => 'tenant.sessions.create',
+        'store' => 'tenant.sessions.store',
+        'edit' => 'tenant.sessions.edit',
+        'update' => 'tenant.sessions.update',
+        'destroy' => 'tenant.sessions.destroy',
+    ])->except(['index']); // Exclude the default index route
+
+    // Add a custom route for the activity index
+    Route::get('/activities', [SessionController::class, 'activityIndex'])->name('tenant.sessions');
 });
 
 // Test route to check if user exists
@@ -156,6 +187,10 @@ Route::middleware([
     }
     return response()->json(['exists' => false]);
 });
+
+
+
+
 
 
 
