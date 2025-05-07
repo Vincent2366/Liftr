@@ -16,8 +16,10 @@
             @endif
 
             <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
-                <form method="POST" action="{{ route('login') }}">
+                <form method="POST" action="{{ route('login') }}" id="login-form">
                     @csrf
+                    <!-- reCAPTCHA token field -->
+                    <input type="hidden" name="g-recaptcha-response" id="recaptcha-token">
 
                     <!-- Email Address -->
                     <div>
@@ -73,11 +75,23 @@
                     </a>
                 </div>
             </div>
-           
         </div>
     </div>
+
+    <!-- reCAPTCHA v3 Script -->
+    <script src="https://www.google.com/recaptcha/api.js?render={{ env('RECAPTCHA_SITE_KEY') }}"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            grecaptcha.ready(function() {
+                grecaptcha.execute('{{ env('RECAPTCHA_SITE_KEY') }}', {action: 'login'})
+                    .then(function(token) {
+                        document.getElementById('recaptcha-token').value = token;
+                        document.getElementById('login-form').submit();
+                    });
+            });
+        });
+    </script>
 </x-guest-layout>
-
-
-
 

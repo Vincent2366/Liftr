@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -24,10 +25,26 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Verify reCAPTCHA
+        $recaptchaResponse = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => env('RECAPTCHA_SECRET_KEY'),
+            'response' => $request->input('g-recaptcha-response'),
+            'remoteip' => $request->ip(),
+        ]);
+        
+        $recaptchaData = $recaptchaResponse->json();
+        
+        if (!$recaptchaData['success'] || $recaptchaData['score'] < 0.5) {
+            return back()->withErrors([
+                'recaptcha' => 'reCAPTCHA verification failed. Please try again.',
+            ]);
+        }
+        
         $request->authenticate();
 
         $request->session()->regenerate();
 
+        // Use direct route instead of RouteServiceProvider::HOME
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -45,3 +62,5 @@ class AuthenticatedSessionController extends Controller
         return redirect('/');
     }
 }
+
+

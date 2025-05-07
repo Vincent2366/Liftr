@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SubdomainController;
+use App\Http\Controllers\RecaptchaController;
 
 foreach (config('tenancy.central_domains') as $domain) {
     Route::domain($domain)->group(function () {
@@ -14,6 +15,9 @@ foreach (config('tenancy.central_domains') as $domain) {
         
         // Include auth routes for central domains
         require __DIR__.'/auth.php';
+        
+        // Add recaptcha verification route
+        Route::post('/verify-recaptcha', [RecaptchaController::class, 'verify'])->name('recaptcha.verify');
         
         // Protected routes that require email verification
         Route::middleware(['auth', 'verified'])->group(function () {
@@ -67,5 +71,6 @@ Route::get('/debug/tenant-schema', function() {
         'tenants' => $tenants
     ];
 })->middleware(['auth', 'role:admin']);
+
 
 
