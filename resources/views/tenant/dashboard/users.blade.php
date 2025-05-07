@@ -176,9 +176,9 @@
                                             </td>
                                             <td>{{ $user->created_at->format('M d, Y') }}</td>
                                             <td>
-                                                <a href="{{ route('tenant.users.edit', $user->id) }}" class="btn btn-info btn-sm">
+                                                <!-- <a href="{{ route('tenant.users.edit', $user->id) }}" class="btn btn-info btn-sm">
                                                     <i class="fas fa-edit"></i>
-                                                </a>
+                                                </a> -->
                                                 <form action="{{ route('tenant.users.destroy', $user->id) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
