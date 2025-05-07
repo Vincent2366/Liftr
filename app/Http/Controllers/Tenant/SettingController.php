@@ -14,7 +14,13 @@ class SettingController extends Controller
      */
     public function index()
     {
-        return view('tenant.settings');
+        $currentVersion = $this->getCurrentVersion();
+        $availableVersions = $this->getAvailableVersions();
+        
+        return view('tenant.settings', [
+            'currentVersion' => $currentVersion,
+            'availableVersions' => $availableVersions
+        ]);
     }
 
     /**
@@ -87,6 +93,40 @@ class SettingController extends Controller
     }
 
     /**
+     * Get the current application version from GitHub
+     */
+    private function getCurrentVersion()
+    {
+        // In production, you might want to cache this or store in database
+        // For now, we'll use the session value or default to '1.0'
+        return session('app_version', '1.0');
+    }
+
+    /**
+     * Get available versions from GitHub
+     */
+    private function getAvailableVersions()
+    {
+        // In a real implementation, you would fetch this from GitHub API
+        // For example: GET /repos/{owner}/{repo}/releases
+        
+        // For now, we'll return hardcoded versions
+        return [
+            '1.0' => [
+                'name' => 'v1.0',
+                'published_at' => '43 minutes ago',
+                'is_latest' => true
+            ],
+            '1.1' => [
+                'name' => 'v1.1',
+                'published_at' => null,
+                'is_latest' => false,
+                'is_prerelease' => true
+            ]
+        ];
+    }
+
+    /**
      * Update to a newer version.
      */
     public function updateVersion(Request $request)
@@ -99,8 +139,11 @@ class SettingController extends Controller
         
         $version = $request->input('version');
         
+        // Store the version in session to simulate version change
+        session(['app_version' => $version]);
+        
         // Here you would implement the actual version upgrade logic
-        // This could involve running migrations, updating settings, etc.
+        // This could involve pulling the new code from GitHub, running migrations, etc.
         
         // Log the version change
         \Log::info('Tenant version upgraded', [
@@ -126,6 +169,9 @@ class SettingController extends Controller
         
         $version = $request->input('version');
         
+        // Store the version in session to simulate version change
+        session(['app_version' => $version]);
+        
         // Here you would implement the actual version rollback logic
         // This could involve reverting migrations, restoring settings, etc.
         
@@ -140,4 +186,6 @@ class SettingController extends Controller
             ->with('success', "Successfully rolled back to version {$version}");
     }
 }
+
+
 

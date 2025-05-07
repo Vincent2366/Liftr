@@ -226,32 +226,68 @@
                                 <div class="card-body">
                                     <div class="mb-3">
                                         <strong>Current Version:</strong> 
-                                        <span class="badge badge-info">v1.0</span>
+                                        <span class="badge badge-info">v{{ $currentVersion }}</span>
+                                        @if(isset($availableVersions[$currentVersion]) && $availableVersions[$currentVersion]['is_latest'])
+                                            <span class="badge badge-success ml-1">Latest</span>
+                                        @endif
                                     </div>
                                     
                                     <div class="mb-3">
                                         <strong>Available Versions:</strong>
                                         <div class="mt-2">
-                                            <form method="POST" action="{{ route('tenant.version.update') }}" class="d-inline">
-                                                @csrf
-                                                <input type="hidden" name="version" value="1.1">
-                                                <button type="submit" class="btn btn-sm btn-success mr-2">
-                                                    <i class="fas fa-arrow-up"></i> Upgrade to v1.1
-                                                </button>
-                                            </form>
-                                            
-                                            <form method="POST" action="{{ route('tenant.version.rollback') }}" class="d-inline">
-                                                @csrf
-                                                <input type="hidden" name="version" value="0.9">
-                                                <button type="submit" class="btn btn-sm btn-warning">
-                                                    <i class="fas fa-arrow-down"></i> Rollback to v0.9
-                                                </button>
-                                            </form>
+                                            @foreach($availableVersions as $version => $versionInfo)
+                                                @if($version != $currentVersion)
+                                                    <form method="POST" action="{{ $version > $currentVersion ? route('tenant.version.update') : route('tenant.version.rollback') }}" class="d-inline mb-2">
+                                                        @csrf
+                                                        <input type="hidden" name="version" value="{{ $version }}">
+                                                        <button type="submit" class="btn btn-sm {{ $version > $currentVersion ? 'btn-success' : 'btn-warning' }} mr-2">
+                                                            <i class="fas fa-{{ $version > $currentVersion ? 'arrow-up' : 'arrow-down' }}"></i> 
+                                                            {{ $version > $currentVersion ? 'Upgrade to' : 'Rollback to' }} v{{ $version }}
+                                                            @if($versionInfo['is_latest'])
+                                                                <span class="badge badge-light ml-1">Latest</span>
+                                                            @endif
+                                                            @if(isset($versionInfo['is_prerelease']) && $versionInfo['is_prerelease'])
+                                                                <span class="badge badge-secondary ml-1">Pre-release</span>
+                                                            @endif
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            @endforeach
                                         </div>
                                     </div>
                                     
                                     <div class="small text-muted mt-3">
                                         <i class="fas fa-info-circle"></i> Changing versions may affect functionality. Make sure to back up your data before upgrading or rolling back.
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <a href="https://github.com/Vincent2366/Liftr/releases" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fab fa-github"></i> View All Releases on GitHub
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- This card will only appear in v1.1 -->
+                    @if(session('app_version') == '1.1')
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card shadow mb-4 border-left-success">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-success">New in Version 1.1</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p>You're using the latest version with these new features:</p>
+                                    <ul>
+                                        <li>Enhanced user interface</li>
+                                        <li>Performance improvements</li>
+                                        <li>Bug fixes</li>
+                                    </ul>
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Version 1.1
                                     </div>
                                 </div>
                             </div>
@@ -320,6 +356,8 @@
 
 </body>
 </html>
+
+
 
 
 
