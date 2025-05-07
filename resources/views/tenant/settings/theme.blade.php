@@ -173,7 +173,7 @@
                                                     </div>
                                                     @if(isset($themeSettings->logo_path) && $themeSettings->logo_path)
                                                         <div class="mt-2">
-                                                            <img src="{{ asset('storage/' . $themeSettings->logo_path) }}" alt="Current Logo" class="img-thumbnail" style="max-height: 100px;">
+                                                            <img src="{{ tenant_asset('logos/' . basename($themeSettings->logo_path)) }}" alt="Current Logo" class="img-thumbnail" style="max-height: 100px;">
                                                         </div>
                                                     @endif
                                                 </div>
@@ -346,6 +346,7 @@
 </body>
 
 </html>
+
 
 
 

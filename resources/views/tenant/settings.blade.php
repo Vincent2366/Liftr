@@ -174,7 +174,7 @@
                         </div>
                         @endif
                         
-                        <div class="col-lg-6">
+                        <!-- <div class="col-lg-6">
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
                                     <h6 class="m-0 font-weight-bold text-primary">Account Settings</h6>
@@ -186,7 +186,7 @@
                                     </a>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                     
                     <!-- Only show tenant information to Admin users -->

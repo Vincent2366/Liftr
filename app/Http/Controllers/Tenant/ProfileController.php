@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules;
 
 class ProfileController extends Controller
@@ -41,19 +42,46 @@ class ProfileController extends Controller
         // Handle profile picture upload
         if ($request->hasFile('profile_picture')) {
             try {
-                // Store the file and update the user's profile picture path
-                $path = $request->file('profile_picture')->store('profile-pictures', 'public');
+                // Get tenant ID
+                $tenantId = tenant('id');
                 
-                // Check if the profile_picture column exists
-                if (Schema::hasColumn('users', 'profile_picture')) {
-                    $user->profile_picture = $path;
+                // Create file name and path
+                $file = $request->file('profile_picture');
+                $filename = $file->hashName();
+                $path = "profile-pictures/{$filename}";
+                
+                // Define the correct directory path - avoid duplication
+                $directory = storage_path("tenant{$tenantId}/app/public/profile-pictures");
+                
+                // Debug information
+                \Log::info("Uploading profile picture to: {$directory}/{$filename}");
+                \Log::info("Tenant ID: {$tenantId}");
+                
+                // Ensure the directory exists
+                if (!is_dir($directory)) {
+                    mkdir($directory, 0755, true);
+                }
+                
+                // Move the uploaded file to the tenant's storage
+                if ($file->move($directory, $filename)) {
+                    \Log::info("File moved successfully");
+                    
+                    // Check if the profile_picture column exists
+                    if (Schema::hasColumn('users', 'profile_picture')) {
+                        // Store just the relative path in the database
+                        $user->profile_picture = $path;
+                        \Log::info("Profile picture path saved: {$path}");
+                    } else {
+                        return redirect()->route('tenant.profile')
+                            ->with('error', 'Profile picture upload is not available yet. Please run migrations first.');
+                    }
                 } else {
-                    // If the column doesn't exist, we can store it in the user's data attribute
-                    // or just skip this part until the migration is run
+                    \Log::error("Failed to move file");
                     return redirect()->route('tenant.profile')
-                        ->with('error', 'Profile picture upload is not available yet. Please run migrations first.');
+                        ->with('error', 'Failed to upload profile picture: Could not move file');
                 }
             } catch (\Exception $e) {
+                \Log::error("Profile picture upload error: " . $e->getMessage());
                 return redirect()->route('tenant.profile')
                     ->with('error', 'Failed to upload profile picture: ' . $e->getMessage());
             }
@@ -81,4 +109,8 @@ class ProfileController extends Controller
         return redirect()->route('tenant.profile')->with('status', 'password-updated');
     }
 }
+
+
+
+
 

@@ -275,19 +275,20 @@
         // Replace the default icon with the custom logo
         const brandIcons = document.querySelectorAll('.sidebar-brand-icon');
         brandIcons.forEach(function(icon) {
-            icon.innerHTML = '<img src="{{ asset('storage/' . $themeSettings->logo_path) }}" alt="Logo">';
+            icon.innerHTML = '<img src="{{ tenant_asset('logos/' . basename($themeSettings->logo_path)) }}" alt="Logo" style="max-width: 100%; max-height: 40px;">';
         });
         
         // Also update login/register page images if they exist
         const loginImages = document.querySelectorAll('.bg-login-image, .bg-register-image, .bg-password-image');
         if (loginImages.length > 0 && !document.querySelector('.login-logo, .register-logo, .password-logo')) {
             loginImages.forEach(function(image) {
-                image.innerHTML = '<img src="{{ asset('storage/' . $themeSettings->logo_path) }}" alt="Logo" class="login-logo">';
+                image.innerHTML = '<img src="{{ tenant_asset('logos/' . basename($themeSettings->logo_path)) }}" alt="Logo" class="login-logo">';
             });
         }
     });
 </script>
 @endif
+
 
 
 

@@ -72,21 +72,44 @@ Route::get('/debug/tenant-schema', function() {
     ];
 })->middleware(['auth', 'role:admin']);
 
-// Tenant asset route
-Route::get('tenant/{id}/storage/{path}', function ($id, $path) {
+// Tenant storage route
+Route::get('tenant{id}/storage/{path}', function ($id, $path) {
     $fullPath = storage_path("tenant{$id}/app/public/{$path}");
     
     if (!file_exists($fullPath)) {
+        // Try central storage as fallback
+        $centralPath = storage_path("app/public/{$path}");
+        if (file_exists($centralPath)) {
+            return response()->file($centralPath);
+        }
+        
+        // If still not found, try public directory
+        $publicPath = public_path("img/{$path}");
+        if (file_exists($publicPath)) {
+            return response()->file($publicPath);
+        }
+        
         abort(404);
     }
     
-    $mimeType = mime_content_type($fullPath);
+    return response()->file($fullPath);
+})->where('path', '.*')->where('id', '[a-zA-Z0-9]+');
+
+// Route for standard assets in tenancy context
+Route::get('tenancy/assets/img/{file}', function ($file) {
+    $publicPath = public_path("img/{$file}");
+    
+    if (!file_exists($publicPath)) {
+        abort(404);
+    }
+    
+    $mimeType = mime_content_type($publicPath);
     $headers = [
         'Content-Type' => $mimeType,
         'Cache-Control' => 'public, max-age=86400',
     ];
     
-    return response()->file($fullPath, $headers);
-})->where('path', '.*');
+    return response()->file($publicPath, $headers);
+});
 
 

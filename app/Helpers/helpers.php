@@ -30,16 +30,30 @@ if (!function_exists('tenant_asset')) {
             return asset('storage/' . $path);
         }
         
-        // Check if the file exists in the tenant's storage
-        $tenantPath = storage_path('tenant' . $tenant->id . '/app/public/' . $path);
-        
-        if (file_exists($tenantPath)) {
-            // Return the tenant-specific URL
-            return url('tenant/' . $tenant->id . '/storage/' . $path);
+        // For profile images and other standard assets, check if they exist in the public directory
+        if (strpos($path, 'img/') === 0) {
+            $publicPath = public_path($path);
+            if (file_exists($publicPath)) {
+                return url($path);
+            }
         }
         
-        // Fallback to regular asset
-        return asset('storage/' . $path);
+        // Log the path for debugging
+        \Log::info("tenant_asset called with path: {$path}");
+        \Log::info("Tenant ID: {$tenant->id}");
+        
+        // Check if the file exists in the tenant storage
+        $fullPath = storage_path("tenant{$tenant->id}/app/public/{$path}");
+        \Log::info("Checking file at: {$fullPath}");
+        
+        if (file_exists($fullPath)) {
+            \Log::info("File exists at path");
+        } else {
+            \Log::warning("File does not exist at path");
+        }
+        
+        // Return the tenant-specific URL
+        return url("tenant{$tenant->id}/storage/{$path}");
     }
 }
 
@@ -55,3 +69,5 @@ if (!function_exists('central_asset')) {
         return asset('storage/' . $path);
     }
 }
+
+

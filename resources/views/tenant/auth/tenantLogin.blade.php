@@ -33,9 +33,13 @@
                         <div class="row">
                             <div class="col-lg-6 d-none d-lg-block bg-login-image">
                                 @if(isset($themeSettings) && $themeSettings->logo_path)
-                                    <img src="{{ asset('storage/' . $themeSettings->logo_path) }}" alt="Logo" class="login-logo">
+                                    <div class="text-center">
+                                        <img src="{{ tenant_asset('logos/' . basename($themeSettings->logo_path)) }}" alt="Logo" class="login-logo" onerror="this.onerror=null; this.src='{{ url('img/undraw_profile.svg') }}'; this.classList.add('fallback-logo');">
+                                    </div>
                                 @elseif(isset($tenant) && $tenant->logo)
-                                    <img src="{{ asset('storage/' . $tenant->logo) }}" alt="{{ $tenant->name }} Logo" class="login-logo">
+                                    <div class="text-center">
+                                        <img src="{{ tenant_asset('logos/' . basename($tenant->logo)) }}" alt="{{ $tenant->name }} Logo" class="login-logo" onerror="this.onerror=null; this.src='{{ url('img/undraw_profile.svg') }}'; this.classList.add('fallback-logo');">
+                                    </div>
                                 @else
                                     <div class="text-center">
                                         <h1 class="h1 text-gray-900">{{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }}</h1>
@@ -92,5 +96,7 @@
     <script src="{{ url('js/sb-admin-2.min.js') }}"></script>
 </body>
 </html>
+
+
 
 

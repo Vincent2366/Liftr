@@ -40,7 +40,13 @@
                         
                         <div class="text-center mb-4">
                             @if(Auth::user()->profile_picture)
-                                <img class="img-profile rounded-circle mb-3" src="{{ asset('storage/' . Auth::user()->profile_picture) }}" width="150">
+                                @php
+                                    $profilePicPath = tenant_asset('profile-pictures/' . basename(Auth::user()->profile_picture));
+                                @endphp
+                                <img class="img-profile rounded-circle mb-3" 
+                                     src="{{ $profilePicPath }}" 
+                                     width="150" 
+                                     onerror="this.onerror=null; this.src='{{ url('img/undraw_profile.svg') }}'; console.log('Failed to load: {{ $profilePicPath }}');">
                             @else
                                 <img class="img-profile rounded-circle mb-3" src="{{ asset('img/undraw_profile.svg') }}" width="150">
                             @endif
@@ -116,3 +122,5 @@
     </div>
 </div>
 @endsection
+
+
