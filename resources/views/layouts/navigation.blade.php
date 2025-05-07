@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-black dark:text-black" />
+                    <img src="{{ asset('img/liftr-logo.png') }}" alt="LIFTR" style="height: 120px; width: auto;" />
                     </a>
                 </div>
 
@@ -96,6 +96,8 @@
         </div>
     </div>
 </nav>
+
+
 
 
 

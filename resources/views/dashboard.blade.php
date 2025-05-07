@@ -11,6 +11,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Custom styles -->
     <style>
+       
+        
+        /* Existing styles */
         .border-left-primary { border-left: 4px solid #4e73df; }
         .border-left-success { border-left: 4px solid #1cc88a; }
         .border-left-info { border-left: 4px solid #36b9cc; }
@@ -33,6 +36,8 @@
         .card-header { background-color: #f8f9fc; border-bottom: 1px solid #e3e6f0; }
         .font-weight-bold { font-weight: 700 !important; }
     </style>
+
+    
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -218,6 +223,7 @@
 
 <!-- Add this somewhere in your dashboard view -->
 <input type="hidden" id="current-tenant-id" value="{{ $tenant->id ?? '' }}">
+
 
 
 

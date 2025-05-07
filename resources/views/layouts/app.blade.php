@@ -5,7 +5,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'LIFTR') }}</title>
+        
+        <!-- Favicon -->
+        <link rel="icon" href="{{ asset('img/liftr-logo.png') }}" type="image/png" sizes="32x32"/>
+        <link rel="shortcut icon" href="{{ asset('img/liftr-logo.png') }}" type="image/png" sizes="16x16"/>
+        <link rel="apple-touch-icon" href="{{ asset('img/liftr-logo.png') }}"/>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -34,6 +39,9 @@
         </div>
     </body>
 </html>
+
+
+
 
 
 
