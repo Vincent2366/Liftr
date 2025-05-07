@@ -110,6 +110,12 @@ document.addEventListener('DOMContentLoaded', function() {
             credentials: 'same-origin'
         })
         .then(response => {
+            if (response.status === 422) {
+                // Handle validation errors
+                return response.json().then(data => {
+                    throw { validationErrors: data.errors };
+                });
+            }
             if (!response.ok) {
                 throw new Error('Network response was not ok: ' + response.status);
             }
@@ -128,13 +134,23 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            errorMessage.querySelector('span').textContent = 'There was an error connecting to the server.';
+            if (error.validationErrors) {
+                // Display validation errors
+                let errorMsg = 'Validation failed: ';
+                for (const field in error.validationErrors) {
+                    errorMsg += error.validationErrors[field].join(', ');
+                }
+                errorMessage.querySelector('span').textContent = errorMsg;
+            } else {
+                errorMessage.querySelector('span').textContent = 'There was an error connecting to the server.';
+            }
             errorMessage.classList.remove('hidden');
-            hideMessageAfterTimeout(errorMessage);
+            hideMessageAfterTimeout(errorMessage, 5000);
         });
     });
 });
 </script>
+
 
 
 
