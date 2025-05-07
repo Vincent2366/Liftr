@@ -204,20 +204,12 @@ class SubdomainController extends Controller
                 'attributes' => $tenant->getAttributes()
             ]);
             
-            // Direct update using query builder to ensure it's saved
-            \DB::table('tenants')
-                ->where('id', $id)
-                ->update(['plan' => $newPlan, 'updated_at' => now()]);
-                
-            // Log the SQL query for debugging
-            \Log::info('SQL query executed', [
-                'query' => \DB::getQueryLog()[count(\DB::getQueryLog())-1] ?? 'Query logging not enabled'
-            ]);
+            // Update the tenant model directly
+            $tenant->plan = $newPlan;
+            $tenant->save();
             
-            // Force refresh the tenant model to get updated data
-            $tenant = Tenant::findOrFail($id);
-            
-            \Log::info('Tenant data after direct update', [
+            // Log the updated tenant data
+            \Log::info('Tenant data after update', [
                 'tenant_id' => $tenant->id,
                 'new_plan' => $tenant->plan,
                 'attributes' => $tenant->getAttributes()
@@ -280,7 +272,8 @@ class SubdomainController extends Controller
             return response()->json([
                 'success' => true, 
                 'message' => 'Plan updated successfully',
-                'plan' => $newPlan
+                'plan' => $newPlan,
+                'redirect' => route('dashboard')
             ]);
         } catch (\Exception $e) {
             \Log::error('Error updating tenant plan', [
@@ -296,6 +289,7 @@ class SubdomainController extends Controller
         }
     }
 }
+
 
 
 

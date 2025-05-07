@@ -113,23 +113,21 @@
     })
     .then(response => {
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        return response.json().then(data => {
+          throw new Error(data.message || `HTTP error! Status: ${response.status}`);
+        });
       }
       return response.json();
     })
     .then(data => {
-      console.log('Response:', data);
-      if (data.success) {
-        const planModal = bootstrap.Modal.getInstance(document.getElementById('planModal'));
-        planModal.hide();
-        window.location.reload();
-      } else {
-        alert(data.message || 'An error occurred while updating the plan.');
-      }
+      console.log('Plan update successful:', data);
+      alert('Plan updated successfully!');
+      // Force page reload to reflect changes
+      window.location.reload();
     })
     .catch(error => {
-      console.error('Error:', error);
-      alert('An error occurred while updating the plan. Please try again.');
+      console.error('Error updating plan:', error);
+      alert('Error updating plan: ' + error.message);
     });
   }
   
@@ -167,22 +165,18 @@
       return response.json();
     })
     .then(data => {
-      console.log('Response:', data);
-      if (data.success) {
-        const subscriptionModal = bootstrap.Modal.getInstance(document.getElementById('subscriptionModal'));
-        subscriptionModal.hide();
-        alert(data.message || 'Plan updated successfully!');
-        window.location.reload();
-      } else {
-        alert(data.message || 'An error occurred while updating the subscription.');
-      }
+      console.log('Subscription update successful:', data);
+      alert('Subscription updated successfully!');
+      // Force page reload to reflect changes
+      window.location.reload();
     })
     .catch(error => {
-      console.error('Error:', error);
-      alert('An error occurred while updating the subscription: ' + error.message);
+      console.error('Error updating subscription:', error);
+      alert('Error updating subscription: ' + error.message);
     });
   }
 </script>
+
 
 
 
