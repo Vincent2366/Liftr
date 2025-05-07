@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }}</title>
 
@@ -16,6 +17,11 @@
 
     <!-- Custom styles for this template-->
     <link href="{{ url('css/sb-admin-2.min.css') }}" rel="stylesheet">
+    
+    <!-- Apply tenant theme -->
+    <x-tenant-theme />
+    
+    @stack('styles')
 </head>
 
 <body id="page-top">
@@ -61,6 +67,7 @@
                     <i class="fas fa-fw fa-dumbbell"></i>
                     <span>Activity</span>
                 </a>
+                
             </li>
 
             <!-- Divider -->
@@ -168,5 +175,10 @@
 </body>
 
 </html>
+
+
+
+
+
 
 

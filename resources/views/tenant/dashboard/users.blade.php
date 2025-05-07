@@ -17,8 +17,8 @@
     <!-- Custom styles for this template-->
     <link href="{{ url('css/sb-admin-2.min.css') }}" rel="stylesheet">
     
-    <!-- Custom styles for datatables -->
-    <link href="{{ url('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+    <!-- Apply tenant theme -->
+    <x-tenant-theme />
 </head>
 
 <body id="page-top">
@@ -68,7 +68,15 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('tenant.sessions') }}">
                     <i class="fas fa-fw fa-calendar"></i>
-                    <span>Sessions</span>
+                    <span>Activity</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Settings -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('tenant.settings') }}">
+                    <i class="fas fa-fw fa-cog"></i>
+                    <span>Settings</span>
                 </a>
             </li>
 
@@ -116,10 +124,7 @@
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                                <a class="dropdown-item" href="{{ route('tenant.settings') }}">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
+                                
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -265,5 +270,7 @@
 </body>
 
 </html>
+
+
 
 

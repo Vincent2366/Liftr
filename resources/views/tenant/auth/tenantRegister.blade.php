@@ -9,7 +9,7 @@
     <meta name="author" content="">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }} - Register</title>
+    <title>{{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }}</title>
 
     <!-- Custom fonts for this template-->
     <link href="{{ url('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
@@ -17,6 +17,54 @@
 
     <!-- Custom styles for this template-->
     <link href="{{ url('css/sb-admin-2.min.css') }}" rel="stylesheet">
+    
+    <!-- Apply tenant theme -->
+    <x-tenant-theme />
+    
+    <style>
+        .bg-register-image {
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .register-logo {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+        }
+        
+        .btn-user {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-user:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .bg-gradient-primary {
+            background-color: var(--primary-color);
+            background-image: linear-gradient(180deg, var(--primary-color) 10%, var(--secondary-color) 100%);
+            background-size: cover;
+        }
+        
+        .text-primary {
+            color: var(--primary-color) !important;
+        }
+        
+        a {
+            color: var(--primary-color);
+        }
+        
+        a:hover {
+            color: var(--secondary-color);
+        }
+    </style>
 </head>
 
 <body class="bg-gradient-primary">
@@ -26,9 +74,13 @@
                 <!-- Nested Row within Card Body -->
                 <div class="row">
                     <div class="col-lg-5 d-none d-lg-block bg-register-image">
-                        @if(isset($tenant) && $tenant->logo)
-                            <div class="h-100 d-flex align-items-center justify-content-center">
-                                <img src="{{ asset('storage/' . $tenant->logo) }}" alt="{{ $tenant->name }} Logo" class="img-fluid px-3">
+                        @if(isset($themeSettings) && $themeSettings->logo_path)
+                            <img src="{{ asset('storage/' . $themeSettings->logo_path) }}" alt="Logo" class="register-logo">
+                        @elseif(isset($tenant) && $tenant->logo)
+                            <img src="{{ asset('storage/' . $tenant->logo) }}" alt="{{ $tenant->name }} Logo" class="register-logo">
+                        @else
+                            <div class="text-center">
+                                <h1 class="h1 text-gray-900">{{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }}</h1>
                             </div>
                         @endif
                     </div>
@@ -36,31 +88,21 @@
                         <div class="p-5">
                             <div class="text-center">
                                 <h1 class="h4 text-gray-900 mb-4">Create an Account!</h1>
-                                @if(isset($tenant) && $tenant->name)
-                                    <p class="mb-4">{{ $tenant->name }}</p>
-                                @endif
                             </div>
-                            
-                            <div id="errorContainer" class="alert alert-danger" style="display: none;"></div>
-                            
-                            <form id="registerForm" class="user" method="POST" action="{{ url('/register') }}">
+                            <form method="POST" action="{{ url('/register') }}" class="user">
                                 @csrf
                                 <div class="form-group">
-                                    <input type="text" class="form-control form-control-user" id="name"
-                                        name="name" placeholder="Full Name" value="{{ old('name') }}" required>
+                                    <input type="text" class="form-control form-control-user" id="name" name="name" placeholder="Full Name" required>
                                 </div>
                                 <div class="form-group">
-                                    <input type="email" class="form-control form-control-user" id="email"
-                                        name="email" placeholder="Email Address" value="{{ old('email') }}" required>
+                                    <input type="email" class="form-control form-control-user" id="email" name="email" placeholder="Email Address" required>
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
-                                        <input type="password" class="form-control form-control-user"
-                                            id="password" name="password" placeholder="Password" required>
+                                        <input type="password" class="form-control form-control-user" id="password" name="password" placeholder="Password" required>
                                     </div>
                                     <div class="col-sm-6">
-                                        <input type="password" class="form-control form-control-user"
-                                            id="password_confirmation" name="password_confirmation" placeholder="Repeat Password" required>
+                                        <input type="password" class="form-control form-control-user" id="password_confirmation" name="password_confirmation" placeholder="Repeat Password" required>
                                     </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary btn-user btn-block">
@@ -68,6 +110,9 @@
                                 </button>
                             </form>
                             <hr>
+                            <div class="text-center">
+                                <a class="small" href="{{ route('password.request') }}">Forgot Password?</a>
+                            </div>
                             <div class="text-center">
                                 <a class="small" href="{{ route('tenant.login') }}">Already have an account? Login!</a>
                             </div>
@@ -87,78 +132,5 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{{ url('js/sb-admin-2.min.js') }}"></script>
-    
-    <script>
-    // Function to show error messages
-    function showError(message) {
-        const errorContainer = document.getElementById('errorContainer');
-        errorContainer.innerHTML = message;
-        errorContainer.style.display = 'block';
-    }
-    
-    // Fetch CSRF cookie before form submission
-    document.addEventListener('DOMContentLoaded', function() {
-        // Fetch the CSRF cookie first
-        fetch('/csrf-cookie', {
-            method: 'GET',
-            credentials: 'include'
-        }).then(response => {
-            console.log('CSRF cookie fetched');
-        }).catch(error => {
-            console.error('Error fetching CSRF cookie:', error);
-        });
-
-        // Registration form submission handler
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            fetch('/register', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json',
-                },
-                credentials: 'include'
-            })
-            .then(response => {
-                // Check if the response is JSON
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    return response.json().then(data => {
-                        if (response.ok) {
-                            if (data.success) {
-                                window.location.href = data.redirect;
-                            } else {
-                                // Show error message
-                                showError(data.error || 'Registration failed');
-                            }
-                        } else {
-                            // Handle validation errors
-                            if (data.errors) {
-                                const errorMessages = Object.values(data.errors).flat();
-                                showError(errorMessages.join('<br>'));
-                            } else {
-                                showError(data.message || 'Registration failed');
-                            }
-                        }
-                    });
-                } else if (response.redirected) {
-                    window.location.href = response.url;
-                } else if (response.ok) {
-                    window.location.reload();
-                } else {
-                    showError('Registration failed. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError('An error occurred. Please try again.');
-            });
-        });
-    });
-    </script>
 </body>
 </html>

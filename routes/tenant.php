@@ -190,27 +190,16 @@ Route::middleware([
     return response()->json(['exists' => false]);
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Tenant Theme Settings - Only accessible to Tenant Admin (Landlord)
+Route::middleware([
+    InitializeTenancyByDomain::class,
+    PreventAccessFromCentralDomains::class,
+    'web',
+    'auth:tenant',
+    'role:Admin',  // Ensure only Admin role can access
+    'check.tenant.status'
+])->group(function () {
+    Route::get('/theme-settings', [SettingController::class, 'themeSettings'])->name('tenant.theme.settings');
+    Route::post('/theme-settings', [SettingController::class, 'updateThemeSettings'])->name('tenant.theme.update');
+});
 

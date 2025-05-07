@@ -16,6 +16,9 @@
 
     <!-- Custom styles for this template-->
     <link href="{{ url('css/sb-admin-2.min.css') }}" rel="stylesheet">
+    
+    <!-- Apply tenant theme -->
+    <x-tenant-theme />
 </head>
 
 <body id="page-top">
@@ -69,7 +72,13 @@
                 </a>
             </li>
 
-          
+            <!-- Nav Item - Settings -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ route('tenant.settings') }}">
+                    <i class="fas fa-fw fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -78,8 +87,6 @@
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
-
-            
 
         </ul>
         <!-- End of Sidebar -->
@@ -115,10 +122,7 @@
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                                <a class="dropdown-item" href="{{ route('tenant.settings') }}">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
+                               
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -341,6 +345,9 @@
 </body>
 
 </html>
+
+
+
 
 
 

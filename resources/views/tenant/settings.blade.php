@@ -16,7 +16,6 @@
 
     <!-- Custom styles for this template-->
     <link href="{{ url('css/sb-admin-2.min.css') }}" rel="stylesheet">
-    <link href="{{ url('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
     
     <!-- Apply tenant theme -->
     <x-tenant-theme />
@@ -66,7 +65,7 @@
             </li>
 
             <!-- Nav Item - Sessions -->
-            <li class="nav-item active">
+            <li class="nav-item">
                 <a class="nav-link" href="{{ route('tenant.sessions') }}">
                     <i class="fas fa-fw fa-calendar"></i>
                     <span>Activity</span>
@@ -74,7 +73,7 @@
             </li>
 
             <!-- Nav Item - Settings -->
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="{{ route('tenant.settings') }}">
                     <i class="fas fa-fw fa-cog"></i>
                     <span>Settings</span>
@@ -88,7 +87,6 @@
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
-
         </ul>
         <!-- End of Sidebar -->
 
@@ -123,15 +121,15 @@
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                               
+                                <a class="dropdown-item" href="{{ route('tenant.settings') }}">
+                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Settings
+                                </a>
                                 <div class="dropdown-divider"></div>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Logout
-                                    </button>
-                                </form>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Logout
+                                </a>
                             </div>
                         </li>
 
@@ -142,71 +140,81 @@
 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-                    <!-- Page Heading -->
-                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">User Activities</h1>
-                        @if(tenant() && tenant()->plan === \App\Models\Tenant::PLAN_ULTIMATE)
-                            <a href="{{ route('tenant.activities.report') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
-                                <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
-                            </a>
-                        @else
-                            <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm disabled">
-                                <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
-                                @if(tenant() && tenant()->plan === \App\Models\Tenant::PLAN_PREMIUM)
-                                    <span class="ms-1 badge bg-info">Upgrade to Ultimate</span>
-                                @endif
-                            </a>
-                        @endif
-                    </div>
 
-                    <!-- Activities Table -->
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">All Activities</h6>
+                    <!-- Page Heading -->
+                    <h1 class="h3 mb-4 text-gray-800">Settings</h1>
+                    
+                    @if(session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
                         </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="activitiesTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th>User</th>
-                                            <th>Date</th>
-                                            <th>Start Time</th>
-                                            <th>End Time</th>
-                                            <th>Duration</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($activities as $activity)
-                                        <tr>
-                                            <td>{{ $activity->user->name }}</td>
-                                            <td>{{ $activity->start_time->format('Y-m-d') }}</td>
-                                            <td>{{ $activity->start_time->format('h:i A') }}</td>
-                                            <td>{{ $activity->end_time ? $activity->end_time->format('h:i A') : 'In Progress' }}</td>
-                                            <td>
-                                                @if($activity->end_time)
-                                                    {{ $activity->start_time->diffForHumans($activity->end_time, true) }}
-                                                @else
-                                                    {{ $activity->start_time->diffForHumans(now(), true) }}
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if($activity->status == 'active')
-                                                    <span class="badge badge-success">Active</span>
-                                                @elseif($activity->status == 'completed')
-                                                    <span class="badge badge-primary">Completed</span>
-                                                @else
-                                                    <span class="badge badge-secondary">{{ ucfirst($activity->status) }}</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                    @endif
+                    
+                    @if(session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+                    
+                    <div class="row">
+                        <!-- Only show theme settings to Admin users -->
+                        @if(Auth::user()->role === 'Admin')
+                        <div class="col-lg-6">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Appearance</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p>Customize the look and feel of your tenant application.</p>
+                                    <a href="{{ route('tenant.theme.settings') }}" class="btn btn-primary">
+                                        <i class="fas fa-paint-brush"></i> Theme Settings
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <div class="col-lg-6">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Account Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p>Manage your account preferences and security settings.</p>
+                                    <a href="{{ route('tenant.profile') }}" class="btn btn-primary">
+                                        <i class="fas fa-user"></i> Profile Settings
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Only show tenant information to Admin users -->
+                    @if(Auth::user()->role === 'Admin')
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Tenant Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>Domain:</strong> {{ tenant()->domains->first()->domain }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Plan:</strong> {{ ucfirst(tenant()->plan) }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Status:</strong> 
+                                        <span class="badge {{ tenant()->status === 'active' ? 'badge-success' : 'badge-warning' }}">
+                                            {{ ucfirst(tenant()->status) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
                 <!-- /.container-fluid -->
 
@@ -217,7 +225,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; {{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }} 2023</span>
+                        <span>Copyright &copy; {{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }} {{ date('Y') }}</span>
                     </div>
                 </div>
             </footer>
@@ -234,6 +242,29 @@
         <i class="fas fa-angle-up"></i>
     </a>
 
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap core JavaScript-->
     <script src="{{ url('vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ url('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
@@ -244,35 +275,7 @@
     <!-- Custom scripts for all pages-->
     <script src="{{ url('js/sb-admin-2.min.js') }}"></script>
 
-    <!-- DataTables -->
-    <script src="{{ url('vendor/datatables/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ url('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
-
-    <script>
-        $(document).ready(function() {
-            $('#activitiesTable').DataTable({
-                "order": [[ 1, "desc" ]],
-                "pageLength": 15,
-                "responsive": true,
-                "language": {
-                    "emptyTable": "No activities found",
-                    "zeroRecords": "No matching activities found",
-                    "search": "Search activities:"
-                },
-                "columnDefs": [
-                    { 
-                        "type": "date", 
-                        "targets": 1 // Ensure column 1 (Date) is treated as date for proper sorting
-                    }
-                ]
-            });
-        });
-    </script>
 </body>
-
 </html>
-
-
-
 
 

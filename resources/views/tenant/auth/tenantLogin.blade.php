@@ -17,6 +17,9 @@
 
     <!-- Custom styles for this template-->
     <link href="{{ url('css/sb-admin-2.min.css') }}" rel="stylesheet">
+    
+    <!-- Apply tenant theme -->
+    <x-tenant-theme />
 </head>
 
 <body class="bg-gradient-primary">
@@ -29,9 +32,13 @@
                         <!-- Nested Row within Card Body -->
                         <div class="row">
                             <div class="col-lg-6 d-none d-lg-block bg-login-image">
-                                @if(isset($tenant) && $tenant->logo)
-                                    <div class="h-100 d-flex align-items-center justify-content-center">
-                                        <img src="{{ asset('storage/' . $tenant->logo) }}" alt="{{ $tenant->name }} Logo" class="img-fluid px-3">
+                                @if(isset($themeSettings) && $themeSettings->logo_path)
+                                    <img src="{{ asset('storage/' . $themeSettings->logo_path) }}" alt="Logo" class="login-logo">
+                                @elseif(isset($tenant) && $tenant->logo)
+                                    <img src="{{ asset('storage/' . $tenant->logo) }}" alt="{{ $tenant->name }} Logo" class="login-logo">
+                                @else
+                                    <div class="text-center">
+                                        <h1 class="h1 text-gray-900">{{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }}</h1>
                                     </div>
                                 @endif
                             </div>
@@ -39,26 +46,14 @@
                                 <div class="p-5">
                                     <div class="text-center">
                                         <h1 class="h4 text-gray-900 mb-4">Welcome to {{ isset($tenant) && $tenant->name ? $tenant->name : (tenant() ? strtoupper(explode('.', tenant()->domains->first()->domain)[0]) : 'LIFTR') }}!</h1>
-                                        @if(isset($tenant) && $tenant->name)
-                                            <p class="mb-4">{{ $tenant->name }}</p>
-                                        @endif
                                     </div>
-                                    <form method="POST" action="{{ url('/login') }}" id="loginForm">
-                                        <!-- No CSRF token field -->
-                                        
+                                    <form method="POST" action="{{ url('/login') }}" id="loginForm" class="user">
+                                        @csrf
                                         <div class="form-group">
-                                            <input type="email" class="form-control form-control-user" name="email" id="email" 
-                                                placeholder="Enter Email Address..." value="{{ old('email') }}" required>
-                                            @error('email')
-                                                <span class="text-danger small">{{ $message }}</span>
-                                            @enderror
+                                            <input type="email" class="form-control form-control-user" id="email" name="email" aria-describedby="emailHelp" placeholder="Enter Email Address..." required>
                                         </div>
                                         <div class="form-group">
-                                            <input type="password" class="form-control form-control-user" name="password" id="password" 
-                                                placeholder="Password" required>
-                                            @error('password')
-                                                <span class="text-danger small">{{ $message }}</span>
-                                            @enderror
+                                            <input type="password" class="form-control form-control-user" id="password" name="password" placeholder="Password" required>
                                         </div>
                                         <div class="form-group">
                                             <div class="custom-control custom-checkbox small">
@@ -66,13 +61,13 @@
                                                 <label class="custom-control-label" for="remember">Remember Me</label>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn btn-primary btn-user btn-block">Login</button>
+                                        <button type="submit" class="btn btn-primary btn-user btn-block">
+                                            Login
+                                        </button>
                                     </form>
                                     <hr>
                                     <div class="text-center">
-                                        @if (Route::has('password.request'))
-                                            <a class="small" href="{{ route('password.request') }}">Forgot Password?</a>
-                                        @endif
+                                        <a class="small" href="{{ route('password.request') }}">Forgot Password?</a>
                                     </div>
                                     <div class="text-center">
                                         <a class="small" href="{{ route('tenant.register') }}">Create an Account!</a>
@@ -87,87 +82,15 @@
     </div>
 
     <!-- Bootstrap core JavaScript-->
-    <script src="{{ url('/vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{ url('/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url('vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
     <!-- Core plugin JavaScript-->
-    <script src="{{ url('/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="{{ url('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
 
     <!-- Custom scripts for all pages-->
-    <script src="{{ url('/js/sb-admin-2.min.js') }}"></script>
-    <script>
-// Fetch CSRF cookie before form submission
-document.addEventListener('DOMContentLoaded', function() {
-    // Fetch the CSRF cookie first
-    fetch('/csrf-cookie', {
-        method: 'GET',
-        credentials: 'include'
-    }).then(response => {
-        console.log('CSRF cookie fetched');
-    }).catch(error => {
-        console.error('Error fetching CSRF cookie:', error);
-    });
-
-    // Login form submission handler
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const formData = new FormData(this);
-        
-        fetch('/login', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json',
-            },
-            credentials: 'include'
-        })
-        .then(response => {
-            // Check if the response is JSON
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return response.json().then(data => {
-                    if (data.success) {
-                        window.location.href = data.redirect;
-                    } else {
-                        // Show error message
-                        showError(data.error || 'Login failed');
-                    }
-                });
-            } else if (response.redirected) {
-                window.location.href = response.url;
-            } else if (response.ok) {
-                window.location.reload();
-            } else {
-                showError('Login failed. Please try again.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showError('An error occurred. Please try again.');
-        });
-    });
-    
-    function showError(message) {
-        const errorElement = document.getElementById('error-message') || document.createElement('div');
-        errorElement.id = 'error-message';
-        errorElement.className = 'text-danger small mt-2';
-        errorElement.textContent = message;
-        
-        if (!document.getElementById('error-message')) {
-            document.querySelector('.form-group:nth-child(2)').appendChild(errorElement);
-        }
-    }
-});
-</script>
+    <script src="{{ url('js/sb-admin-2.min.js') }}"></script>
 </body>
 </html>
-
-
-
-
-
-
 
 
