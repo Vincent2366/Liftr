@@ -129,6 +129,8 @@ Route::middleware([
 
     // Profile and settings - available to all authenticated users
     Route::get('/profile', [ProfileController::class, 'index'])->name('tenant.profile');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('tenant.profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('tenant.password.update');
     Route::get('/settings', [SettingController::class, 'index'])->name('tenant.settings');
 });
 
@@ -202,4 +204,5 @@ Route::middleware([
     Route::get('/theme-settings', [SettingController::class, 'themeSettings'])->name('tenant.theme.settings');
     Route::post('/theme-settings', [SettingController::class, 'updateThemeSettings'])->name('tenant.theme.update');
 });
+
 
