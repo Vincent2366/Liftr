@@ -8,11 +8,15 @@
             <!-- Session Status -->
             <x-auth-session-status class="mb-4" :status="session('status')" />
 
+            <!-- Success Message -->
+            <x-success-message id="login-success" :message="session('success')" class="mb-4" :autoHide="true" :timeout="5000" />
+            
             <!-- Error Message -->
-            @if (session('error'))
-                <div class="mb-4 font-medium text-sm text-red-600">
-                    {{ session('error') }}
-                </div>
+            <x-error-message id="login-error" :message="session('error')" class="mb-4" :autoHide="true" :timeout="5000" />
+            
+            <!-- reCAPTCHA Error -->
+            @if ($errors->has('recaptcha'))
+                <x-error-message id="recaptcha-error" :message="$errors->first('recaptcha')" class="mb-4" :autoHide="true" :timeout="5000" />
             @endif
 
             <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
@@ -94,4 +98,5 @@
         });
     </script>
 </x-guest-layout>
+
 

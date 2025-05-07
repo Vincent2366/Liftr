@@ -40,12 +40,20 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
         
-        $request->authenticate();
-
-        $request->session()->regenerate();
-
-        // Use direct route instead of RouteServiceProvider::HOME
-        return redirect()->intended(route('dashboard', absolute: false));
+        try {
+            $request->authenticate();
+            $request->session()->regenerate();
+            
+            // Flash success message
+            session()->flash('success', 'You have been successfully logged in.');
+            
+            // Use direct route instead of RouteServiceProvider::HOME
+            return redirect()->intended(route('dashboard', absolute: false));
+        } catch (\Exception $e) {
+            // Flash error message
+            session()->flash('error', 'Authentication failed. Please check your credentials.');
+            return back();
+        }
     }
 
     /**
@@ -58,9 +66,14 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
+        
+        // Flash success message
+        session()->flash('success', 'You have been successfully logged out.');
 
         return redirect('/');
     }
 }
+
+
 
 

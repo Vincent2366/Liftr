@@ -32,6 +32,8 @@
             <div class="flex flex-col md:flex-row gap-8 items-center justify-center min-h-[80vh]">
                 <!-- Welcome Content -->
                 <div class="card w-full md:w-1/2 max-w-md">
+                    <x-success-message id="welcome-success" :message="session('success')" class="mb-4" :autoHide="true" :timeout="5000" />
+                    <x-error-message id="welcome-error" :message="session('error')" class="mb-4" :autoHide="true" :timeout="5000" />
                     <h1 class="text-3xl font-bold mb-4">Welcome to Liftr</h1>
                     <p class="mb-4">The online platform for weightlifting gyms and personal trainers.</p>
                     <p class="mb-6">Request your own domain to get started!</p>
@@ -133,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 
 
 
