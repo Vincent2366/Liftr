@@ -205,4 +205,18 @@ Route::middleware([
     Route::post('/theme-settings', [SettingController::class, 'updateThemeSettings'])->name('tenant.theme.update');
 });
 
+// Version Control Routes - Only accessible to Tenant Admin
+Route::middleware([
+    InitializeTenancyByDomain::class,
+    PreventAccessFromCentralDomains::class,
+    'web',
+    'auth:tenant',
+    'role:Admin',
+    'check.tenant.status'
+])->group(function () {
+    Route::post('/version/update', [SettingController::class, 'updateVersion'])->name('tenant.version.update');
+    Route::post('/version/rollback', [SettingController::class, 'rollbackVersion'])->name('tenant.version.rollback');
+});
+
+
 

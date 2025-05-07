@@ -85,9 +85,59 @@ class SettingController extends Controller
         return redirect()->route('tenant.theme.settings')
             ->with('success', 'Theme settings updated successfully.');
     }
+
+    /**
+     * Update to a newer version.
+     */
+    public function updateVersion(Request $request)
+    {
+        // Additional check to ensure only Admin can update version
+        if (Auth::user()->role !== 'Admin') {
+            return redirect()->route('tenant.dashboard')
+                ->with('error', 'You do not have permission to update version.');
+        }
+        
+        $version = $request->input('version');
+        
+        // Here you would implement the actual version upgrade logic
+        // This could involve running migrations, updating settings, etc.
+        
+        // Log the version change
+        \Log::info('Tenant version upgraded', [
+            'tenant' => tenant()->id,
+            'new_version' => $version,
+            'user_id' => Auth::id()
+        ]);
+        
+        return redirect()->route('tenant.settings')
+            ->with('success', "Successfully upgraded to version {$version}");
+    }
+
+    /**
+     * Rollback to a previous version.
+     */
+    public function rollbackVersion(Request $request)
+    {
+        // Additional check to ensure only Admin can rollback version
+        if (Auth::user()->role !== 'Admin') {
+            return redirect()->route('tenant.dashboard')
+                ->with('error', 'You do not have permission to rollback version.');
+        }
+        
+        $version = $request->input('version');
+        
+        // Here you would implement the actual version rollback logic
+        // This could involve reverting migrations, restoring settings, etc.
+        
+        // Log the version change
+        \Log::info('Tenant version rolled back', [
+            'tenant' => tenant()->id,
+            'previous_version' => $version,
+            'user_id' => Auth::id()
+        ]);
+        
+        return redirect()->route('tenant.settings')
+            ->with('success', "Successfully rolled back to version {$version}");
+    }
 }
-
-
-
-
 

@@ -215,6 +215,49 @@
                         </div>
                     </div>
                     @endif
+
+                    @if(Auth::user()->role === 'Admin')
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Version Control</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>Current Version:</strong> 
+                                        <span class="badge badge-info">v1.0</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <strong>Available Versions:</strong>
+                                        <div class="mt-2">
+                                            <form method="POST" action="{{ route('tenant.version.update') }}" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="version" value="1.1">
+                                                <button type="submit" class="btn btn-sm btn-success mr-2">
+                                                    <i class="fas fa-arrow-up"></i> Upgrade to v1.1
+                                                </button>
+                                            </form>
+                                            
+                                            <form method="POST" action="{{ route('tenant.version.rollback') }}" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="version" value="0.9">
+                                                <button type="submit" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-arrow-down"></i> Rollback to v0.9
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="small text-muted mt-3">
+                                        <i class="fas fa-info-circle"></i> Changing versions may affect functionality. Make sure to back up your data before upgrading or rolling back.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
                 <!-- /.container-fluid -->
 
@@ -277,5 +320,6 @@
 
 </body>
 </html>
+
 
 
